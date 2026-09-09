@@ -6,7 +6,7 @@
 
 ---
 
-> ⚠️ This can only enable increased memory for apps installed with apple developer accounts and not with public enterprise certifiates.
+> ⚠️ This can only enable increased memory for apps installed with apple developer accounts and not with public enterprise certificates.
 
 ## How to use
 1. [Download](https://github.com/NovaDev404/iRAM-Plus/releases/latest/download/iRAM-Plus.ipa) the latest IPA
