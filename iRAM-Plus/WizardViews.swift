@@ -85,7 +85,13 @@ struct WelcomeSlide: View {
                 DataManager.shared.model.anisetteServerURL = viewModel.anisetteServerURL
                 AnisetteDataHelper.shared.url = URL(string: viewModel.anisetteServerURL)
                 viewModel.resetLoginState()
-                viewModel.nextStep()
+                
+                // Check if already logged in
+                if DataManager.shared.model.session != nil && DataManager.shared.model.account != nil {
+                    viewModel.goToStep(.apps)
+                } else {
+                    viewModel.nextStep()
+                }
             }) {
                 Text("Get Started")
                     .font(.headline)
@@ -754,6 +760,12 @@ struct AddCapabilitySlide: View {
             
             if let app = viewModel.selectedApp {
                 VStack(spacing: 10) {
+                    let iconName = getAppIconName(for: app.bundleID)
+                    Image(iconName)
+                        .resizable()
+                        .frame(width: 80, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                    
                     Text(app.name)
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(.primary)

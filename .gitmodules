@@ -1,3 +1,0 @@
-[submodule "OpenSSL"]
-	path = OpenSSL
-	url = https://github.com/krzyzanowskim/OpenSSL
