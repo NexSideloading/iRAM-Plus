@@ -141,40 +141,15 @@ final class AnisetteDataHelper
     
     func provision() async throws -> AnisetteData {
         try await fetchClientInfo()
-        
-        // Verify client info was properly fetched
-        guard self.clientInfo != nil, self.userAgent != nil, self.mdLu != nil, self.deviceId != nil else {
-            self.printOut("ERROR: Client info not properly set after fetchClientInfo()")
-            throw "Failed to get required client information from anisette server"
-        }
-        
-        self.printOut("Getting provisioning URLs")
-        let gsaURL = URL(string: "https://gsa.apple.com/grandslam/GsService2/lookup")!
-        var request = self.buildAppleRequest(url: gsaURL)
-        request.httpMethod = "GET"
-        
-        self.printOut("Requesting GSA lookup with client info: \(self.clientInfo!)")
-        
+            self.printOut("Getting provisioning URLs")
+            var request = self.buildAppleRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2/lookup")!)
+            request.httpMethod = "GET"
         let (data, response) = try await URLSession.shared.data(for: request)
-        
-        if let httpResponse = response as? HTTPURLResponse {
-            self.printOut("GSA lookup response status: \(httpResponse.statusCode)")
-            if httpResponse.statusCode != 200 {
-                self.printOut("GSA lookup failed with status \(httpResponse.statusCode)")
-                self.printOut("Response body: \(String(data: data, encoding: .utf8) ?? "not utf8")")
-                throw "Apple GSA service returned error \(httpResponse.statusCode). Please try again later"
-            }
-        }
-        
-        let responseString = String(data: data, encoding: .utf8) ?? "not utf8"
-        self.printOut("GSA lookup response: \(responseString)")
-        
         if
            let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? Dictionary<String, Dictionary<String, Any>>,
-           let urls = plist["urls"],
-           let startProvisioningString = urls["midStartProvisioning"] as? String,
+           let startProvisioningString = plist["urls"]?["midStartProvisioning"] as? String,
            let startProvisioningURL = URL(string: startProvisioningString),
-           let endProvisioningString = urls["midFinishProvisioning"] as? String,
+           let endProvisioningString = plist["urls"]?["midFinishProvisioning"] as? String,
            let endProvisioningURL = URL(string: endProvisioningString) {
             self.startProvisioningURL = startProvisioningURL
             self.endProvisioningURL = endProvisioningURL
@@ -183,13 +158,11 @@ final class AnisetteDataHelper
             self.printOut("Starting a provisioning session")
             return try await self.startProvisioningSession()
         } else {
-            self.printOut("Apple didn't give valid URLs! Response structure:")
-            self.printOut(responseString)
-            if let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? Dictionary<String, Any> {
-                self.printOut("Parsed plist: \(plist)")
-            }
-            throw "Apple didn't give valid URLs. The service may be temporarily unavailable. Please try again later"
+            self.printOut("Apple didn't give valid URLs! Got response: \(String(data: data, encoding: .utf8) ?? "not utf8")")
+            throw "Apple didn't give valid URLs. Please try again later"
         }
+
+        
     }
     
     func startProvisioningSession() async throws -> AnisetteData {
