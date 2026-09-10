@@ -16,7 +16,7 @@ struct TempAnisetteData: Codable {
     var deviceSerialNumber: String
     var machineID: String?
     var oneTimePassword: String?
-    var routingInfo: Int?
+    var routingInfo: String?
     var deviceDescription: String?
     var localUserID: String?
     var deviceUniqueIdentifier: String?
@@ -39,7 +39,7 @@ struct TempAnisetteData: Codable {
         deviceSerialNumber = try container.decode(String.self, forKey: .deviceSerialNumber)
         machineID = try container.decodeIfPresent(String.self, forKey: .machineID)
         oneTimePassword = try container.decodeIfPresent(String.self, forKey: .oneTimePassword)
-        routingInfo = try container.decodeIfPresent(Int.self, forKey: .routingInfo)
+        routingInfo = try container.decodeIfPresent(String.self, forKey: .routingInfo)
         deviceDescription = try container.decodeIfPresent(String.self, forKey: .deviceDescription)
         localUserID = try container.decodeIfPresent(String.self, forKey: .localUserID)
         deviceUniqueIdentifier = try container.decodeIfPresent(String.self, forKey: .deviceUniqueIdentifier)
@@ -142,7 +142,7 @@ final class AnisetteDataHelper
             
             if let machineID = json["X-Apple-I-MD-M"] { tempData.machineID = machineID }
             if let oneTimePassword = json["X-Apple-I-MD"] { tempData.oneTimePassword = oneTimePassword }
-            if let routingInfo = json["X-Apple-I-MD-RINFO"] { tempData.routingInfo = Int(routingInfo) }
+            if let routingInfo = json["X-Apple-I-MD-RINFO"] { tempData.routingInfo = routingInfo }
             
             if v3 {
                 tempData.deviceDescription = self.clientInfo!
