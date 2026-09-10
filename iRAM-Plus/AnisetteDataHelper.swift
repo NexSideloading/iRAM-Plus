@@ -76,34 +76,53 @@ final class AnisetteDataHelper
             
             // try to read out a dictionary
             // for some reason serial number isn't needed but it doesn't work unless it has a value
-            var formattedJSON: [String: String] = ["deviceSerialNumber": "0"]
+            var formattedJSON: [String: Any] = ["deviceSerialNumber": "0"]
             if let machineID = json["X-Apple-I-MD-M"] { formattedJSON["machineID"] = machineID }
             if let oneTimePassword = json["X-Apple-I-MD"] { formattedJSON["oneTimePassword"] = oneTimePassword }
-            if let routingInfo = json["X-Apple-I-MD-RINFO"] { formattedJSON["routingInfo"] = routingInfo }
+            if let routingInfo = json["X-Apple-I-MD-RINFO"] {
+                // routingInfo should be an Int based on how it's used in AppIDViewModel
+                if let routingInfoInt = Int(routingInfo) {
+                    formattedJSON["routingInfo"] = routingInfoInt
+                } else {
+                    formattedJSON["routingInfo"] = routingInfo
+                }
+            }
             
             if v3 {
                 formattedJSON["deviceDescription"] = self.clientInfo!
                 formattedJSON["localUserID"] = self.mdLu!
                 formattedJSON["deviceUniqueIdentifier"] = self.deviceId!
                 
-                // Generate date stuff on client
-                let formatter = DateFormatter()
-                formatter.locale = Locale(identifier: "en_US_POSIX")
-                formatter.calendar = Calendar(identifier: .gregorian)
-                formatter.timeZone = TimeZone.current
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-                let dateString = formatter.string(from: Date())
-                formattedJSON["date"] = dateString
-                formattedJSON["locale"] = Locale.current.identifier
-                formattedJSON["timeZone"] = TimeZone.current.abbreviation()
+                // Generate date stuff on client - use proper types
+                formattedJSON["date"] = Date()
+                formattedJSON["locale"] = Locale.current
+                formattedJSON["timeZone"] = TimeZone.current
             } else {
                 if let deviceDescription = json["X-MMe-Client-Info"] { formattedJSON["deviceDescription"] = deviceDescription }
                 if let localUserID = json["X-Apple-I-MD-LU"] { formattedJSON["localUserID"] = localUserID }
                 if let deviceUniqueIdentifier = json["X-Mme-Device-Id"] { formattedJSON["deviceUniqueIdentifier"] = deviceUniqueIdentifier }
                 
-                if let date = json["X-Apple-I-Client-Time"] { formattedJSON["date"] = date }
-                if let locale = json["X-Apple-Locale"] { formattedJSON["locale"] = locale }
-                if let timeZone = json["X-Apple-I-TimeZone"] { formattedJSON["timeZone"] = timeZone }
+                // Parse date string to Date object
+                if let dateString = json["X-Apple-I-Client-Time"] {
+                    let formatter = DateFormatter()
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.calendar = Calendar(identifier: .gregorian)
+                    formatter.timeZone = TimeZone(identifier: "UTC")
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                    if let date = formatter.date(from: dateString) {
+                        formattedJSON["date"] = date
+                    }
+                }
+                
+                // Parse locale string to Locale object
+                if let localeString = json["X-Apple-Locale"] {
+                    formattedJSON["locale"] = Locale(identifier: localeString)
+                }
+                
+                // Parse timezone string to TimeZone object
+                if let timeZoneString = json["X-Apple-I-TimeZone"] {
+                    formattedJSON["timeZone"] = TimeZone(abbreviation: timeZoneString)
+                }
             }
             
             if let response = response,
@@ -115,16 +134,18 @@ final class AnisetteDataHelper
             self.printOut("Original JSON: \(json)")
             do {
                 let jsonData = try JSONEncoder().encode(formattedJSON)
+                self.printOut("Encoded JSON data: \(String(data: jsonData, encoding: .utf8) ?? "unable to encode")")
                 let anisette = try JSONDecoder().decode(AnisetteData.self, from: jsonData)
                 
                 self.printOut("Anisette is valid!")
                 return anisette
             } catch {
-                self.printOut("Anisette is invalid!!!!")
+                self.printOut("Anisette is invalid!!!! Error: \(error)")
+                self.printOut("Decoding error details: \(error.localizedDescription)")
                 if v3 {
-                    throw "Invalid anisette (the returned data may not have all the required fields)"
+                    throw "Invalid anisette (the returned data may not have all the required fields). Error: \(error.localizedDescription)"
                 } else {
-                    throw "Invalid anisette (the returned data may not have all the required fields)"
+                    throw "Invalid anisette (the returned data may not have all the required fields). Error: \(error.localizedDescription)"
                 }
             }
         } else {
