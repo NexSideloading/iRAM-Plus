@@ -11,68 +11,6 @@ import CryptoKit
 import StosSign_API_NoCertificate
 import StosSign_Auth
 
-// Temporary struct for encoding Anisette data with correct types
-struct TempAnisetteData: Codable {
-    var deviceSerialNumber: String
-    var machineID: String?
-    var oneTimePassword: String?
-    var routingInfo: String?
-    var deviceDescription: String?
-    var localUserID: String?
-    var deviceUniqueIdentifier: String?
-    var date: Date?
-    var locale: Locale?
-    var timeZone: TimeZone?
-    
-    enum CodingKeys: String, CodingKey {
-        case deviceSerialNumber, machineID, oneTimePassword, routingInfo
-        case deviceDescription, localUserID, deviceUniqueIdentifier
-        case date, locale, timeZone
-    }
-    
-    init(deviceSerialNumber: String) {
-        self.deviceSerialNumber = deviceSerialNumber
-    }
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        deviceSerialNumber = try container.decode(String.self, forKey: .deviceSerialNumber)
-        machineID = try container.decodeIfPresent(String.self, forKey: .machineID)
-        oneTimePassword = try container.decodeIfPresent(String.self, forKey: .oneTimePassword)
-        routingInfo = try container.decodeIfPresent(String.self, forKey: .routingInfo)
-        deviceDescription = try container.decodeIfPresent(String.self, forKey: .deviceDescription)
-        localUserID = try container.decodeIfPresent(String.self, forKey: .localUserID)
-        deviceUniqueIdentifier = try container.decodeIfPresent(String.self, forKey: .deviceUniqueIdentifier)
-        date = try container.decodeIfPresent(Date.self, forKey: .date)
-        
-        if let localeIdentifier = try container.decodeIfPresent(String.self, forKey: .locale) {
-            locale = Locale(identifier: localeIdentifier)
-        } else {
-            locale = nil
-        }
-        
-        if let timeZoneAbbreviation = try container.decodeIfPresent(String.self, forKey: .timeZone) {
-            timeZone = TimeZone(abbreviation: timeZoneAbbreviation)
-        } else {
-            timeZone = nil
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(deviceSerialNumber, forKey: .deviceSerialNumber)
-        try container.encodeIfPresent(machineID, forKey: .machineID)
-        try container.encodeIfPresent(oneTimePassword, forKey: .oneTimePassword)
-        try container.encodeIfPresent(routingInfo, forKey: .routingInfo)
-        try container.encodeIfPresent(deviceDescription, forKey: .deviceDescription)
-        try container.encodeIfPresent(localUserID, forKey: .localUserID)
-        try container.encodeIfPresent(deviceUniqueIdentifier, forKey: .deviceUniqueIdentifier)
-        try container.encodeIfPresent(date, forKey: .date)
-        try container.encodeIfPresent(locale?.identifier, forKey: .locale)
-        try container.encodeIfPresent(timeZone?.abbreviation(), forKey: .timeZone)
-    }
-}
-
 final class AnisetteDataHelper
 {
     var socket: URLSessionWebSocketTask?
@@ -138,47 +76,34 @@ final class AnisetteDataHelper
             
             // try to read out a dictionary
             // for some reason serial number isn't needed but it doesn't work unless it has a value
-            var tempData = TempAnisetteData(deviceSerialNumber: "0")
-            
-            if let machineID = json["X-Apple-I-MD-M"] { tempData.machineID = machineID }
-            if let oneTimePassword = json["X-Apple-I-MD"] { tempData.oneTimePassword = oneTimePassword }
-            if let routingInfo = json["X-Apple-I-MD-RINFO"] { tempData.routingInfo = routingInfo }
+            var formattedJSON: [String: String] = ["deviceSerialNumber": "0"]
+            if let machineID = json["X-Apple-I-MD-M"] { formattedJSON["machineID"] = machineID }
+            if let oneTimePassword = json["X-Apple-I-MD"] { formattedJSON["oneTimePassword"] = oneTimePassword }
+            if let routingInfo = json["X-Apple-I-MD-RINFO"] { formattedJSON["routingInfo"] = routingInfo }
             
             if v3 {
-                tempData.deviceDescription = self.clientInfo!
-                tempData.localUserID = self.mdLu!
-                tempData.deviceUniqueIdentifier = self.deviceId!
+                formattedJSON["deviceDescription"] = self.clientInfo!
+                formattedJSON["localUserID"] = self.mdLu!
+                formattedJSON["deviceUniqueIdentifier"] = self.deviceId!
                 
-                // Generate date stuff on client - use proper types
-                tempData.date = Date()
-                tempData.locale = Locale.current
-                tempData.timeZone = TimeZone.current
+                // Generate date stuff on client
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.calendar = Calendar(identifier: .gregorian)
+                formatter.timeZone = TimeZone.current
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                let dateString = formatter.string(from: Date())
+                formattedJSON["date"] = dateString
+                formattedJSON["locale"] = Locale.current.identifier
+                formattedJSON["timeZone"] = TimeZone.current.abbreviation()
             } else {
-                if let deviceDescription = json["X-MMe-Client-Info"] { tempData.deviceDescription = deviceDescription }
-                if let localUserID = json["X-Apple-I-MD-LU"] { tempData.localUserID = localUserID }
-                if let deviceUniqueIdentifier = json["X-Mme-Device-Id"] { tempData.deviceUniqueIdentifier = deviceUniqueIdentifier }
+                if let deviceDescription = json["X-MMe-Client-Info"] { formattedJSON["deviceDescription"] = deviceDescription }
+                if let localUserID = json["X-Apple-I-MD-LU"] { formattedJSON["localUserID"] = localUserID }
+                if let deviceUniqueIdentifier = json["X-Mme-Device-Id"] { formattedJSON["deviceUniqueIdentifier"] = deviceUniqueIdentifier }
                 
-                // Parse date string to Date object
-                if let dateString = json["X-Apple-I-Client-Time"] {
-                    let formatter = DateFormatter()
-                    formatter.locale = Locale(identifier: "en_US_POSIX")
-                    formatter.calendar = Calendar(identifier: .gregorian)
-                    formatter.timeZone = TimeZone(identifier: "UTC")
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-                    if let date = formatter.date(from: dateString) {
-                        tempData.date = date
-                    }
-                }
-                
-                // Parse locale string to Locale object
-                if let localeString = json["X-Apple-Locale"] {
-                    tempData.locale = Locale(identifier: localeString)
-                }
-                
-                // Parse timezone string to TimeZone object
-                if let timeZoneString = json["X-Apple-I-TimeZone"] {
-                    tempData.timeZone = TimeZone(abbreviation: timeZoneString)
-                }
+                if let date = json["X-Apple-I-Client-Time"] { formattedJSON["date"] = date }
+                if let locale = json["X-Apple-Locale"] { formattedJSON["locale"] = locale }
+                if let timeZone = json["X-Apple-I-TimeZone"] { formattedJSON["timeZone"] = timeZone }
             }
             
             if let response = response,
@@ -186,22 +111,20 @@ final class AnisetteDataHelper
                 self.printOut("Implementation-Version: \(version)")
             } else { self.printOut("No Implementation-Version header") }
             
-            self.printOut("Anisette used: \(tempData)")
+            self.printOut("Anisette used: \(formattedJSON)")
             self.printOut("Original JSON: \(json)")
             do {
-                let jsonData = try JSONEncoder().encode(tempData)
-                self.printOut("Encoded JSON data: \(String(data: jsonData, encoding: .utf8) ?? "unable to encode")")
+                let jsonData = try JSONEncoder().encode(formattedJSON)
                 let anisette = try JSONDecoder().decode(AnisetteData.self, from: jsonData)
                 
                 self.printOut("Anisette is valid!")
                 return anisette
             } catch {
-                self.printOut("Anisette is invalid!!!! Error: \(error)")
-                self.printOut("Decoding error details: \(error.localizedDescription)")
+                self.printOut("Anisette is invalid!!!!")
                 if v3 {
-                    throw "Invalid anisette (the returned data may not have all the required fields). Error: \(error.localizedDescription)"
+                    throw "Invalid anisette (the returned data may not have all the required fields)"
                 } else {
-                    throw "Invalid anisette (the returned data may not have all the required fields). Error: \(error.localizedDescription)"
+                    throw "Invalid anisette (the returned data may not have all the required fields)"
                 }
             }
         } else {
