@@ -36,9 +36,6 @@ class AppIDModel : ObservableObject, Hashable {
             }
         }
         
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
-        
         logging(text: "=== Starting Memory Limit Enablement ===")
         
         guard let team = DataManager.shared.model.team, let session = DataManager.shared.model.session else {

@@ -307,8 +307,10 @@ struct SettingsSlide: View {
         .background(Color(UIColor.systemGroupedBackground))
         .keyboardAdaptive()
         .frame(maxWidth: 600)
-        .task {
-            await viewModel.fetchAnisetteServers()
+        .onAppear {
+            Task {
+                await viewModel.fetchAnisetteServers()
+            }
         }
     }
 }
@@ -688,17 +690,19 @@ struct AppsListSlide: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .task {
-            do {
-                try await appIDViewModel.fetchAppIDs()
-                await MainActor.run {
-                    isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    viewModel.errorMessage = error.localizedDescription
-                    viewModel.showError = true
-                    isLoading = false
+        .onAppear {
+            Task {
+                do {
+                    try await appIDViewModel.fetchAppIDs()
+                    await MainActor.run {
+                        isLoading = false
+                    }
+                } catch {
+                    await MainActor.run {
+                        viewModel.errorMessage = error.localizedDescription
+                        viewModel.showError = true
+                        isLoading = false
+                    }
                 }
             }
         }

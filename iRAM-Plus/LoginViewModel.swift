@@ -81,9 +81,6 @@ class LoginViewModel: ObservableObject {
                 self?.logs.append("\(text)\n")
             }
         }
-        
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
 
         AnisetteDataHelper.shared.loggingFunc = logging
 
@@ -237,9 +234,6 @@ class LoginViewModel: ObservableObject {
             }
         }
         
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
-        
         logging(text: "Fetching teams for account")
         logging(text: "Session dsid: \(session.dsid)")
         logging(text: "Session anisette data available: \(session.anisetteData.machineID != "")")
@@ -266,9 +260,6 @@ class LoginViewModel: ObservableObject {
                 self?.logs.append("\(text)\n")
             }
         }
-        
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
         
         logging(text: "=== Starting 2FA Verification ===")
         logging(text: "Verification code provided: \(code.isEmpty ? "EMPTY" : "HAS_VALUE")")
