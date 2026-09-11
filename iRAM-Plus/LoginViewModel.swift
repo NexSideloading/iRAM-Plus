@@ -81,6 +81,9 @@ class LoginViewModel: ObservableObject {
                 self?.logs.append("\(text)\n")
             }
         }
+        
+        // Make logging function Sendable for Swift 6 compatibility
+        let logging: @Sendable (String) -> Void = logging
 
         AnisetteDataHelper.shared.loggingFunc = logging
 
@@ -132,7 +135,7 @@ class LoginViewModel: ObservableObject {
             }
 
             logging(text: "Step 2 completed: Apple authentication successful")
-            logging(text: "Account received: \(account.name)")
+            logging(text: "Account received successfully")
             logging(text: "Session received: dsid=\(session.dsid)")
 
             await MainActor.run {
@@ -166,7 +169,7 @@ class LoginViewModel: ObservableObject {
             logging(text: "Step 4: Fetching teams...")
             let teams = try await fetchTeams(for: account, session: session)
             logging(text: "Step 4 completed: Successfully fetched \(teams.count) teams")
-            logging(text: "Teams: \(teams.map { $0.name }.joined(separator: ", "))")
+            logging(text: "Teams: \(teams.map { String($0.identifier.prefix(8)) + "..." }.joined(separator: ", "))")
             await MainActor.run {
                 availableTeams = teams
                 progressCallback?(1.0, "Successfully fetched teams")
@@ -176,7 +179,7 @@ class LoginViewModel: ObservableObject {
             await MainActor.run {
                 if let firstTeam = teams.first {
                     DataManager.shared.model.team = firstTeam
-                    logging(text: "Auto-selected team: \(firstTeam.name)")
+                    logging(text: "Auto-selected team: \(String(firstTeam.identifier.prefix(8)) + "...")")
                 }
             }
 
@@ -234,7 +237,10 @@ class LoginViewModel: ObservableObject {
             }
         }
         
-        logging(text: "Fetching teams for account: \(account.name)")
+        // Make logging function Sendable for Swift 6 compatibility
+        let logging: @Sendable (String) -> Void = logging
+        
+        logging(text: "Fetching teams for account")
         logging(text: "Session dsid: \(session.dsid)")
         logging(text: "Session anisette data available: \(session.anisetteData.machineID != "")")
         
@@ -260,6 +266,9 @@ class LoginViewModel: ObservableObject {
                 self?.logs.append("\(text)\n")
             }
         }
+        
+        // Make logging function Sendable for Swift 6 compatibility
+        let logging: @Sendable (String) -> Void = logging
         
         logging(text: "=== Starting 2FA Verification ===")
         logging(text: "Verification code provided: \(code.isEmpty ? "EMPTY" : "HAS_VALUE")")
