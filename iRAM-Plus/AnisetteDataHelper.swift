@@ -374,6 +374,35 @@ final class AnisetteDataHelper
             throw "No Anisette Server Found!"
         }
         
+        self.printOut("Using custom client_info")
+                        
+        self.clientInfo = "<iMac18,3> <macOS;27.0;26A5378j> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
+        self.userAgent = "AuthKit/1 (Macintosh; OS X 27.0) (com.apple.akd/1.0)"
+        self.printOut("Client-Info: \(self.clientInfo!)")
+        self.printOut("User-Agent: \(self.userAgent!)")
+        
+        if Keychain.shared.identifier == nil {
+            self.printOut("Generating identifier")
+            var bytes = [Int8](repeating: 0, count: 16)
+            let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+            
+            if status != errSecSuccess {
+                self.printOut("ERROR GENERATING IDENTIFIER!!! \(status)")
+                throw "Couldn't generate identifier"
+            }
+            
+            Keychain.shared.identifier = Data(bytes: &bytes, count: bytes.count).base64EncodedString()
+        }
+        
+        let decoded = Data(base64Encoded: Keychain.shared.identifier!)!
+        self.mdLu = decoded.sha256().hexEncodedString()
+        self.printOut("X-Apple-I-MD-LU: \(self.mdLu!)")
+        let uuid: UUID = decoded.object()
+        self.deviceId = uuid.uuidString.uppercased()
+        self.printOut("X-Mme-Device-Id: \(self.deviceId!)")
+
+        // Client info on Anisette Servers are out of date for latest GSA
+        /*
         self.printOut("Trying to get client_info from: \(self.url!.absoluteString)")
         let clientInfoURL = self.url!.appendingPathComponent("v3").appendingPathComponent("client_info")
         
@@ -443,7 +472,7 @@ final class AnisetteDataHelper
                     throw "Couldn't fetch client info. The anisette server returned invalid data. Try a different server."
                 }
             }
-
+        */
     }
     
     func fetchAnisetteV3(_ identifier: String, _ adiPb: String) async throws -> AnisetteData {
