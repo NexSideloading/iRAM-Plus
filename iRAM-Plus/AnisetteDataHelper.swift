@@ -144,7 +144,16 @@ final class AnisetteDataHelper
             self.printOut("Getting provisioning URLs")
             var request = self.buildAppleRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2/lookup")!)
             request.httpMethod = "GET"
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let httpResponse = response as? HTTPURLResponse {
+            self.printOut("GSA response status: \(httpResponse.statusCode)")
+            if httpResponse.statusCode != 200 {
+                self.printOut("GSA request failed with status \(httpResponse.statusCode)")
+                self.printOut("Response body: \(String(data: data, encoding: .utf8) ?? "not utf8")")
+            }
+        }
+
         if
            let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? Dictionary<String, Dictionary<String, Any>>,
            let startProvisioningString = plist["urls"]?["midStartProvisioning"] as? String,
@@ -162,7 +171,7 @@ final class AnisetteDataHelper
             throw "Apple didn't give valid URLs. Please try again later"
         }
 
-        
+
     }
     
     func startProvisioningSession() async throws -> AnisetteData {
@@ -260,8 +269,17 @@ final class AnisetteDataHelper
         var request = self.buildAppleRequest(url: self.startProvisioningURL!)
         request.httpMethod = "POST"
         request.httpBody = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let httpResponse = response as? HTTPURLResponse {
+            self.printOut("Start provisioning response status: \(httpResponse.statusCode)")
+            if httpResponse.statusCode != 200 {
+                self.printOut("Start provisioning request failed with status \(httpResponse.statusCode)")
+                self.printOut("Response body: \(String(data: data, encoding: .utf8) ?? "not utf8")")
+            }
+        }
+
         if let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? Dictionary<String, Dictionary<String, Any>>,
            let spim = plist["Response"]?["spim"] as? String {
             return spim
@@ -281,8 +299,17 @@ final class AnisetteDataHelper
         var request = self.buildAppleRequest(url: self.endProvisioningURL!)
         request.httpMethod = "POST"
         request.httpBody = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let httpResponse = response as? HTTPURLResponse {
+            self.printOut("End provisioning response status: \(httpResponse.statusCode)")
+            if httpResponse.statusCode != 200 {
+                self.printOut("End provisioning request failed with status \(httpResponse.statusCode)")
+                self.printOut("Response body: \(String(data: data, encoding: .utf8) ?? "not utf8")")
+            }
+        }
+
         if let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? Dictionary<String, Dictionary<String, Any>>,
            let ptm = plist["Response"]?["ptm"] as? String,
            let tk = plist["Response"]?["tk"] as? String {
@@ -374,7 +401,7 @@ final class AnisetteDataHelper
                         // when X-MMe-Client-Info identifies the client as Xcode.
                         // Report the actual auth daemon (akd) instead.
                         let fixedClientInfo = clientInfo.replacingOccurrences(
-                            of: #"com\.apple\.dt\.Xcode/[^)>]+"#,
+                            of: #"com\.apple\.dt\.Xcode/[^)>]+(?:\))?"#,
                             with: "com.apple.akd/1.0",
                             options: .regularExpression
                         )
@@ -430,7 +457,15 @@ final class AnisetteDataHelper
         ], options: [])
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let (data, response) = try await URLSession.shared.data(for: request)
-        
+
+        if let httpResponse = response as? HTTPURLResponse {
+            self.printOut("Anisette V3 response status: \(httpResponse.statusCode)")
+            if httpResponse.statusCode != 200 {
+                self.printOut("Anisette V3 fetch failed with status \(httpResponse.statusCode)")
+                self.printOut("Response body: \(String(data: data, encoding: .utf8) ?? "not utf8")")
+            }
+        }
+
         return try await self.extractAnisetteData(data, response as? HTTPURLResponse, v3: true)
 
     }
