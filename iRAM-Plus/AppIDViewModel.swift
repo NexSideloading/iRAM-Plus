@@ -36,27 +36,27 @@ class AppIDModel : ObservableObject, Hashable {
             }
         }
         
-        logging("=== Starting Memory Limit Enablement ===")
-        
+        logging(text: "=== Starting Memory Limit Enablement ===")
+
         guard let team = DataManager.shared.model.team, let session = DataManager.shared.model.session else {
-            logging("ERROR: No team or session found. Please login first.")
+            logging(text: "ERROR: No team or session found. Please login first.")
             throw "Please Login First"
         }
 
-        logging("Team: \(String(team.identifier.prefix(8)) + "...") (\(team.identifier))")
-        logging("Session: dsid=\(session.dsid)")
-        logging("AppID: \(appID.name) (\(appID.bundleIdentifier))")
-        
-        logging("Refreshing Anisette data if needed...")
+        logging(text: "Team: \(String(team.identifier.prefix(8)) + "...") (\(team.identifier))")
+        logging(text: "Session: dsid=\(session.dsid)")
+        logging(text: "AppID: \(appID.name) (\(appID.bundleIdentifier))")
+
+        logging(text: "Refreshing Anisette data if needed...")
         try await AppleAPI.shared.refreshAnisetteDataIfNeeded(for: session)
-        logging("Anisette data refresh completed")
-        
+        logging(text: "Anisette data refresh completed")
+
         let enableIncreasedMemoryLimit = UserDefaults.standard.bool(forKey: "enableIncreasedMemoryLimit")
         let enableExtendedVirtualAddressing = UserDefaults.standard.bool(forKey: "enableExtendedVirtualAddressing")
-        
-        logging("Capabilities to enable:")
-        logging("- Increased Memory Limit: \(enableIncreasedMemoryLimit)")
-        logging("- Extended Virtual Addressing: \(enableExtendedVirtualAddressing)")
+
+        logging(text: "Capabilities to enable:")
+        logging(text: "- Increased Memory Limit: \(enableIncreasedMemoryLimit)")
+        logging(text: "- Extended Virtual Addressing: \(enableExtendedVirtualAddressing)")
         
         let dateFormatter = ISO8601DateFormatter()
         let httpHeaders = [
@@ -79,8 +79,8 @@ class AppIDModel : ObservableObject, Hashable {
             "X-Apple-I-TimeZone": session.anisetteData.timeZone.abbreviation()!
         ] as [String : String];
         
-        logging( "HTTP Headers prepared (excluding sensitive tokens)")
-        logging( "Request URL: https://developerservices2.apple.com/services/v1/bundleIds/\(appID.identifier)")
+        logging(text: "HTTP Headers prepared (excluding sensitive tokens)")
+        logging(text: "Request URL: https://developerservices2.apple.com/services/v1/bundleIds/\(appID.identifier)")
         
         // Build capabilities array based on settings
         var capabilities: [[String: Any]] = []
@@ -141,39 +141,39 @@ class AppIDModel : ObservableObject, Hashable {
             ]
         ]
         
-        logging( "Request body prepared with \(capabilities.count) capabilities")
-        
+        logging(text: "Request body prepared with \(capabilities.count) capabilities")
+
         var request = URLRequest(url: URL(string: "https://developerservices2.apple.com/services/v1/bundleIds/\(appID.identifier)")!)
         request.httpMethod = "PATCH"
         request.allHTTPHeaderFields = httpHeaders
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-        
-        logging( "Sending PATCH request to Apple Developer API...")
+
+        logging(text: "Sending PATCH request to Apple Developer API...")
         let (data, response) = try await URLSession.shared.data(for: request)
         let responseString = String(data: data, encoding: .utf8) ?? "Unable to decode response."
-        
-        logging( "Response received")
+
+        logging(text: "Response received")
         if let httpResponse = response as? HTTPURLResponse {
-            logging( "HTTP Status: \(httpResponse.statusCode)")
+            logging(text: "HTTP Status: \(httpResponse.statusCode)")
         }
-        
+
         let enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging")
         if enableDebugging {
-            logging( "Response body: \(responseString)")
+            logging(text: "Response body: \(responseString)")
         }
-        
+
         if let httpResponse = response as? HTTPURLResponse,
            !(200..<300).contains(httpResponse.statusCode) {
             let errorMessage = "Apple API request failed with HTTP \(httpResponse.statusCode)."
-            logging( "ERROR: \(errorMessage)")
+            logging(text: "ERROR: \(errorMessage)")
             if enableDebugging {
                 throw "\(errorMessage)\n\(responseString)"
             } else {
                 throw errorMessage
             }
         }
-        
-        logging( "Request successful!")
+
+        logging(text: "Request successful!")
         
         await MainActor.run {
             var successMessage = "✅ Success! "
@@ -198,7 +198,7 @@ class AppIDModel : ObservableObject, Hashable {
             result = successMessage
         }
         
-        logging( "=== Memory Limit Enablement Completed Successfully ===")
+        logging(text: "=== Memory Limit Enablement Completed Successfully ===")
     }
     
 }
