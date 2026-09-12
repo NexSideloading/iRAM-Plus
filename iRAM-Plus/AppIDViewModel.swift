@@ -30,7 +30,7 @@ class AppIDModel : ObservableObject, Hashable {
     }
     
     func addIncreasedMemory() async throws {
-        func logging( String) {
+        func logging(text: String) {
             Task { @MainActor [weak self] in
                 self?.result += "\(text)\n"
             }
