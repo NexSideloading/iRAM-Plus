@@ -367,10 +367,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		176645A62FFCAF8800969D1F /* XCRemoteSwiftPackageReference "StosSign" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NexSideloading/StosSign";
+			repositoryURL = "https://github.com/hugeBlack/StosSign";
 			requirement = {
-				branch = main;
-				kind = branch;
+				revision = 69397b49fc8a1bd87ce8f65cc0b403831f838735;
+				kind = revision;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
