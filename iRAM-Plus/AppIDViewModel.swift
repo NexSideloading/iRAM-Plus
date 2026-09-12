@@ -61,11 +61,10 @@ class AppIDModel : ObservableObject, Hashable {
         let dateFormatter = ISO8601DateFormatter()
         let httpHeaders = [
             "Content-Type": "application/vnd.api+json",
-            "User-Agent": "Xcode",
+            "User-Agent": "akd/1.0 CFNetwork/1333.0.4",
             "Accept": "application/vnd.api+json",
             "Accept-Language": "en-us",
-            "X-Apple-App-Info": "com.apple.gs.xcode.auth",
-            "X-Xcode-Version": "11.2 (11B41)",
+            "X-Apple-App-Info": "com.apple.gs.akd.auth",
             "X-Apple-I-Identity-Id": session.dsid,
             "X-Apple-GS-Token": session.authToken,
             "X-Apple-I-MD-M": session.anisetteData.machineID,
