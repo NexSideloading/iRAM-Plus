@@ -81,9 +81,6 @@ class LoginViewModel: ObservableObject {
                 self?.logs.append("\(text)\n")
             }
         }
-        
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
 
         AnisetteDataHelper.shared.loggingFunc = logging
 
@@ -104,15 +101,15 @@ class LoginViewModel: ObservableObject {
         }
 
         do {
-            logging(text: "=== Starting Authentication Process ===")
-            logging(text: "Apple Account: \(appleAccount)")
+            logging("=== Starting Authentication Process ===")
+            logging("Apple Account: \(appleAccount)")
             
             await MainActor.run {
                 progressCallback?(0.1, "Trying to get anisette data")
             }
-            logging(text: "Step 1: Fetching Anisette data...")
+            logging("Step 1: Fetching Anisette data...")
             let anisetteData = try await AnisetteDataHelper.shared.getAnisetteData()
-            logging(text: "Step 1 completed: Anisette data received successfully")
+            logging("Step 1 completed: Anisette data received successfully")
             await MainActor.run {
                 progressCallback?(0.3, "Anisette data received")
             }
@@ -120,23 +117,23 @@ class LoginViewModel: ObservableObject {
             await MainActor.run {
                 progressCallback?(0.4, "Authenticating with Apple")
             }
-            logging(text: "Step 2: Starting Apple authentication...")
-            logging(text: "Using Anisette data - machineID: \(anisetteData.machineID.prefix(10))...")
+            logging("Step 2: Starting Apple authentication...")
+            logging("Using Anisette data - machineID: \(anisetteData.machineID.prefix(10))...")
             
             let (account, session) = try await AppleAPI.shared.authenticate(appleID: appleAccount, password: password, anisetteData: anisetteData) { [weak self] completionHandler in
                 guard let self else {
-                    logging(text: "ERROR: Self is nil in authentication callback")
+                    logging("ERROR: Self is nil in authentication callback")
                     completionHandler(nil)
                     return
                 }
 
-                logging(text: "2FA required, preparing verification UI")
+                logging("2FA required, preparing verification UI")
                 self.prepareForVerification(using: completionHandler)
             }
 
-            logging(text: "Step 2 completed: Apple authentication successful")
-            logging(text: "Account received successfully")
-            logging(text: "Session received: dsid=\(session.dsid)")
+            logging("Step 2 completed: Apple authentication successful")
+            logging("Account received successfully")
+            logging("Session received: dsid=\(session.dsid)")
 
             await MainActor.run {
                 progressCallback?(0.65, "Authentication successful")
@@ -144,32 +141,32 @@ class LoginViewModel: ObservableObject {
 
             await MainActor.run {
                 guard !isAuthenticationCancellationRequested else {
-                    logging(text: "Authentication was cancelled by user")
+                    logging("Authentication was cancelled by user")
                     return
                 }
             }
 
             if await MainActor.run(body: { isAuthenticationCancellationRequested }) {
-                logging(text: "Throwing cancellation error")
+                logging("Throwing cancellation error")
                 throw CancellationError()
             }
 
-            logging(text: "Step 3: Storing account and session in DataManager")
+            logging("Step 3: Storing account and session in DataManager")
             await MainActor.run {
                 DataManager.shared.model.account = account
                 DataManager.shared.model.session = session
             }
-            logging(text: "Step 3 completed: Account and session stored")
+            logging("Step 3 completed: Account and session stored")
 
-            logging(text: "Successfully signed in")
+            logging("Successfully signed in")
             await MainActor.run {
                 progressCallback?(0.8, "Successfully signed in")
             }
 
-            logging(text: "Step 4: Fetching teams...")
+            logging("Step 4: Fetching teams...")
             let teams = try await fetchTeams(for: account, session: session)
-            logging(text: "Step 4 completed: Successfully fetched \(teams.count) teams")
-            logging(text: "Teams: \(teams.map { String($0.identifier.prefix(8)) + "..." }.joined(separator: ", "))")
+            logging("Step 4 completed: Successfully fetched \(teams.count) teams")
+            logging("Teams: \(teams.map { String($0.identifier.prefix(8)) + "..." }.joined(separator: ", "))")
             await MainActor.run {
                 availableTeams = teams
                 progressCallback?(1.0, "Successfully fetched teams")
@@ -179,29 +176,29 @@ class LoginViewModel: ObservableObject {
             await MainActor.run {
                 if let firstTeam = teams.first {
                     DataManager.shared.model.team = firstTeam
-                    logging(text: "Auto-selected team: \(String(firstTeam.identifier.prefix(8)) + "...")")
+                    logging("Auto-selected team: \(String(firstTeam.identifier.prefix(8)) + "...")")
                 }
             }
 
-            logging(text: "=== Authentication Process Completed Successfully ===")
+            logging("=== Authentication Process Completed Successfully ===")
             return true
         } catch {
-            logging(text: "=== ERROR IN AUTHENTICATION PROCESS ===")
-            logging(text: "Error type: \(type(of: error))")
-            logging(text: "Error description: \(error.localizedDescription)")
+            logging("=== ERROR IN AUTHENTICATION PROCESS ===")
+            logging("Error type: \(type(of: error))")
+            logging("Error description: \(error.localizedDescription)")
             if let localizedError = error as? LocalizedError {
-                logging(text: "Localized error: \(localizedError.errorDescription ?? "N/A")")
+                logging("Localized error: \(localizedError.errorDescription ?? "N/A")")
                 if let failureReason = localizedError.failureReason {
-                    logging(text: "Failure reason: \(failureReason)")
+                    logging("Failure reason: \(failureReason)")
                 }
             }
-            logging(text: "Error details: \(error)")
+            logging("Error details: \(error)")
             
             if await MainActor.run(body: { isAuthenticationCancellationRequested }) {
-                logging(text: "Error was due to user cancellation")
+                logging("Error was due to user cancellation")
                 throw CancellationError()
             }
-            logging(text: "Throwing error to caller")
+            logging("Throwing error to caller")
             throw error
         }
     }
@@ -237,22 +234,19 @@ class LoginViewModel: ObservableObject {
             }
         }
         
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
-        
-        logging(text: "Fetching teams for account")
-        logging(text: "Session dsid: \(session.dsid)")
-        logging(text: "Session anisette data available: \(session.anisetteData.machineID != "")")
+        logging("Fetching teams for account")
+        logging("Session dsid: \(session.dsid)")
+        logging("Session anisette data available: \(session.anisetteData.machineID != "")")
         
         let fetchedTeams = try await AppleAPI.shared.fetchTeamsForAccount(account: account, session: session)
-        logging(text: "Received \(fetchedTeams.count) teams from Apple API")
+        logging("Received \(fetchedTeams.count) teams from Apple API")
         
         guard !fetchedTeams.isEmpty else {
-            logging(text: "ERROR: No teams returned from Apple API")
+            logging("ERROR: No teams returned from Apple API")
             throw "Unable to Fetch Team!"
         }
 
-        logging(text: "Teams fetched successfully")
+        logging("Teams fetched successfully")
         return fetchedTeams
     }
     
@@ -267,10 +261,7 @@ class LoginViewModel: ObservableObject {
             }
         }
         
-        // Make logging function Sendable for Swift 6 compatibility
-        let logging: @Sendable (String) -> Void = logging
-        
-        logging(text: "=== Starting 2FA Verification ===")
+        logging("=== Starting 2FA Verification ===")
         logging(text: "Verification code provided: \(code.isEmpty ? "EMPTY" : "HAS_VALUE")")
         
         await MainActor.run {
