@@ -119,6 +119,9 @@ class LoginViewModel: ObservableObject {
             }
             logging(text: "Step 2: Starting Apple authentication...")
             logging(text: "Using Anisette data - machineID: \(anisetteData.machineID.prefix(10))...")
+            logging(text: "Anisette device description: \(anisetteData.deviceDescription)")
+            logging(text: "Anisette local user ID: \(anisetteData.localUserID)")
+            logging(text: "Anisette device ID: \(anisetteData.deviceUniqueIdentifier)")
 
             let (account, session) = try await AppleAPI.shared.authenticate(appleID: appleAccount, password: password, anisetteData: anisetteData) { [weak self] completionHandler in
                 guard let self else {
@@ -193,6 +196,28 @@ class LoginViewModel: ObservableObject {
                 }
             }
             logging(text: "Error details: \(error)")
+
+            logging(text: "=== RAW ERROR DETAILS ===")
+            if let nsError = error as NSError? {
+                logging(text: "NSError domain: \(nsError.domain)")
+                logging(text: "NSError code: \(nsError.code)")
+                logging(text: "NSError userInfo: \(nsError.userInfo)")
+
+                // Try to extract any response data if available
+                if let urlError = nsError as? URLError {
+                    logging(text: "URLError code: \(urlError.code.rawValue)")
+                    logging(text: "URLError description: \(urlError.localizedDescription)")
+                    if let failingURL = urlError.failureURLString {
+                        logging(text: "Failing URL: \(failingURL)")
+                    }
+                }
+
+                // Try to extract any underlying data
+                if let underlyingData = nsError.userInfo[NSUnderlyingErrorKey] {
+                    logging(text: "Underlying error: \(underlyingData)")
+                }
+            }
+            logging(text: "=== END RAW ERROR DETAILS ===")
 
             if await MainActor.run(body: { isAuthenticationCancellationRequested }) {
                 logging(text: "Error was due to user cancellation")
