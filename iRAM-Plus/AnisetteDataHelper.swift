@@ -370,7 +370,18 @@ final class AnisetteDataHelper
                     if let clientInfo = json["client_info"] {
                         self.printOut("Server is V3")
                         
-                        self.clientInfo = clientInfo
+                        // Apple started rejecting GrandSlam requests in Sep 2026
+                        // when X-MMe-Client-Info identifies the client as Xcode.
+                        // Report the actual auth daemon (akd) instead.
+                        let fixedClientInfo = clientInfo.replacingOccurrences(
+                            of: #"com\.apple\.dt\.Xcode/[^)>]+"#,
+                            with: "com.apple.akd/1.0",
+                            options: .regularExpression
+                        )
+                        if fixedClientInfo != clientInfo {
+                            self.printOut("Rewriting blocked Xcode client identifier to akd")
+                        }
+                        self.clientInfo = fixedClientInfo
                         self.userAgent = json["user_agent"]!
                         self.printOut("Client-Info: \(self.clientInfo!)")
                         self.printOut("User-Agent: \(self.userAgent!)")
