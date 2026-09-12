@@ -1,5 +1,5 @@
 {
-  "originHash" : "09f2d403ef43c7e620f89c45b6b5c6b5b3b36043dc408f598687554383a009a3",
+  "originHash" : "updated-to-nexsideloading-stossign",
   "pins" : [
     {
       "identity" : "big-num",
@@ -22,10 +22,10 @@
     {
       "identity" : "stossign",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hugeBlack/StosSign",
+      "location" : "https://github.com/NexSideloading/StosSign",
       "state" : {
         "branch" : "main",
-        "revision" : "69397b49fc8a1bd87ce8f65cc0b403831f838735"
+        "revision" : "449d3c08458e67c8a8e584bce0f8deac6b7b9c01"
       }
     },
     {
