@@ -401,8 +401,8 @@ final class AnisetteDataHelper
                         // when X-MMe-Client-Info identifies the client as Xcode.
                         // Report the actual auth daemon (akd) instead.
                         let fixedClientInfo = clientInfo.replacingOccurrences(
-                            of: #"com\.apple\.dt\.Xcode/[^)>]+(?:\))?"#,
-                            with: "com.apple.akd/1.0",
+                            of: #"\(com\.apple\.dt\.Xcode/[^)]+\)"#,
+                            with: "(com.apple.akd/1.0)",
                             options: .regularExpression
                         )
                         if fixedClientInfo != clientInfo {
