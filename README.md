@@ -25,7 +25,7 @@
 
 > [!WARNING]
 > iRAM+ can only enable Increased Memory Limit for apps signed with an **Apple account**.
-> It does **not** work with apps installed using public enterprise certificates.
+> It does **not** work with apps installed using public enterprise certificates. Although, you can *install* iRAM+ with an enterprise certificate.
 
 ---
 
