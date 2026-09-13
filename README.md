@@ -35,7 +35,7 @@
 * 🔐 Sign in with the Apple account used to sign your app
 * 🔄 Apply the entitlement to existing sideloaded apps
 * ⚡ No computer required
-* 🎨 Native iOS interface
+* 🎨 Native iOS step-by-step wizard interface
 
 ---
 
