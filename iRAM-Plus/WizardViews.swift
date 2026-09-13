@@ -825,8 +825,22 @@ struct AddCapabilitySlide: View {
             Button("OK", role: .cancel) {
                 viewModel.goToStep(.login)
             }
+            if viewModel.enableDebugging && !viewModel.serverResponse.isEmpty {
+                Button("Copy Logs") {
+                    UIPasteboard.general.string = viewModel.serverResponse
+                }
+            }
         } message: {
-            Text(viewModel.errorMessage)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(viewModel.errorMessage)
+                if viewModel.enableDebugging && !viewModel.serverResponse.isEmpty {
+                    Text("\nDebug Logs:")
+                        .font(.headline)
+                    Text(viewModel.serverResponse)
+                        .font(.caption)
+                        .lineLimit(10)
+                }
+            }
         }
         .background(Color(UIColor.systemGroupedBackground))
         .frame(maxWidth: 600)
@@ -848,6 +862,7 @@ struct AddCapabilitySlide: View {
                 }
             } catch {
                 await MainActor.run {
+                    viewModel.serverResponse = app.result
                     let errorDescription = error.localizedDescription.lowercased()
                     
                     // Check if error is authentication/session expired
