@@ -717,6 +717,7 @@ struct AddCapabilitySlide: View {
     @ObservedObject var viewModel: WizardViewModel
     @State private var isAdding = false
     @State private var showServerResponse = false
+    @State private var retryCount = 0
     
     var buttonText: String {
         var enabledCapabilities: [String] = []
@@ -821,7 +822,9 @@ struct AddCapabilitySlide: View {
         }
         .frame(maxWidth: .infinity)
         .alert("Error", isPresented: $viewModel.showError) {
-            Button("OK", role: .cancel) { }
+            Button("OK", role: .cancel) {
+                viewModel.goToStep(.login)
+            }
         } message: {
             Text(viewModel.errorMessage)
         }
@@ -841,21 +844,40 @@ struct AddCapabilitySlide: View {
                     viewModel.serverResponse = app.result
                     viewModel.nextStep()
                     isAdding = false
+                    retryCount = 0
                 }
             } catch {
                 await MainActor.run {
-                    // Check if error is authentication/session expired
                     let errorDescription = error.localizedDescription.lowercased()
+                    
+                    // Check if error is authentication/session expired
                     if errorDescription.contains("401") || errorDescription.contains("not_authorized") || errorDescription.contains("session has expired") {
                         // Navigate back to login page
                         viewModel.goToStep(.login)
                         viewModel.errorMessage = "Your session has expired. Please log in again."
                         viewModel.showError = true
+                        isAdding = false
+                        retryCount = 0
+                    } else if errorDescription.contains("bad server response") && retryCount < 2 {
+                        // Retry for bad server response (max 3 attempts total)
+                        retryCount += 1
+                        isAdding = false
+                        // Retry after a short delay
+                        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                        addCapability()
                     } else {
-                        viewModel.errorMessage = error.localizedDescription
+                        // Final error after retries or other error
+                        // Check if still logged in
+                        if DataManager.shared.model.session == nil || DataManager.shared.model.team == nil {
+                            viewModel.goToStep(.login)
+                            viewModel.errorMessage = "You are no longer logged in. Please log in again."
+                        } else {
+                            viewModel.errorMessage = error.localizedDescription
+                        }
                         viewModel.showError = true
+                        isAdding = false
+                        retryCount = 0
                     }
-                    isAdding = false
                 }
             }
         }
