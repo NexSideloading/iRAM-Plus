@@ -1,37 +1,93 @@
 <div align="center">
-  <img height="128" width="128" src="https://raw.githubusercontent.com/NovaDev404/iRAM-Plus/refs/heads/main/iRAM-Plus/Assets.xcassets/AppIcon.appiconset/icon.png">
+  <img src="https://raw.githubusercontent.com/NovaDev404/iRAM-Plus/refs/heads/main/iRAM-Plus/Assets.xcassets/AppIcon.appiconset/icon.png" width="128" height="128" alt="iRAM+ icon">
+
   <h1>iRAM+</h1>
-  <p><strong>An app that allows you to enable <code>Increased Memory Limit</code>to your sideloaded apps directly on device.</strong></p>
+
+  <p>
+    Enable <code>Increased Memory Limit</code> for your sideloaded apps,
+    directly on device.
+  </p>
+
+  <p>
+    <a href="https://github.com/NovaDev404/iRAM-Plus/releases/latest">
+      <img src="https://img.shields.io/github/v/release/NovaDev404/iRAM-Plus?style=for-the-badge&label=Latest%20Release" alt="Latest Release">
+    </a>
+    <a href="https://github.com/NovaDev404/iRAM-Plus/stargazers">
+      <img src="https://img.shields.io/github/stars/NovaDev404/iRAM-Plus?style=for-the-badge" alt="GitHub Stars">
+    </a>
+    <a href="https://github.com/NovaDev404/iRAM-Plus/blob/main/LICENSE">
+      <img src="https://img.shields.io/github/license/NovaDev404/iRAM-Plus?style=for-the-badge" alt="License">
+    </a>
+  </p>
 </div>
+
+<br>
+
+> [!WARNING]
+> iRAM+ can only enable Increased Memory Limit for apps signed with an **Apple account**.
+> It does **not** work with apps installed using public enterprise certificates.
 
 ---
 
-> ⚠️ This can only enable increased memory for apps installed with apple accounts and not with public enterprise certificates.
+## ✨ Features
 
-## How to use
-1. [Download](https://github.com/NovaDev404/iRAM-Plus/releases/latest/download/iRAM-Plus.ipa) the latest IPA
-2. Sideload this app
-3. Sign in with your account that you used to sign the app you want to enable "Increased Memory Limit" for
-4. Tap the app that you want to enable "Increased Memory Limit"
-5. Tap "Add Increased Memory Limit"
-6. Reinstall the app from SideStore/AltStore
-7. Check if you have "Increased Memory Limit"
+* 📱 Enable **Increased Memory Limit** and **Extended Virtual Addressing**, directly on-device
+* 🔐 Sign in with the Apple account used to sign your app
+* 🔄 Apply the entitlement to existing sideloaded apps
+* ⚡ No computer required
+* 🎨 Native iOS interface
 
-<h2>Screenshots</h2>
+---
+
+## 📲 How to use
+
+### 1. Download iRAM+
+Download the latest IPA from the [latest release](https://github.com/NovaDev404/iRAM-Plus/releases/latest/download/iRAM-Plus.ipa).
+### 2. Sideload iRAM+
+Install the IPA using your preferred sideloading method, such as SideStore, LiveContainer, iLoader, or [Direct Install](https://install.sideloading.net/#apps).
+### 3. Sign in
+Open iRAM+ and sign in with your Apple Account.
+### 4. Select your app
+Tap the app you want to enable Increased Memory Limit for.
+### 5. Add the entitlement
+Tap **Add Increased Memory Limit**.
+### 6. Reinstall the app
+Reinstall the modified app through SideStore, or your preferred sideloading method.
+### 7. Verify
+
+Open the app and check whether **Increased Memory Limit** is now enabled.
+
+---
+
+## 📸 Screenshots
+
 <p align="center">
-  <img src="screenshots/IMG_0798.png" width="180" alt="Screenshot 1">
-  <img src="screenshots/IMG_0799.png" width="180" alt="Screenshot 2">
-  <img src="screenshots/IMG_0800.jpeg" width="180" alt="Screenshot 3">
-</p>
-<p align="center">
-  <img src="screenshots/IMG_0801.png" width="180" alt="Screenshot 4">
-  <img src="screenshots/IMG_0802.png" width="180" alt="Screenshot 5">
-  <img src="screenshots/IMG_0803.png" width="180" alt="Screenshot 6">
+  <img src="screenshots/IMG_0865.PNG" width="180" alt="iRAM+ screenshot 1">
+  &nbsp;&nbsp;
+  <img src="screenshots/IMG_0864.PNG" width="180" alt="iRAM+ screenshot 2">
+  &nbsp;&nbsp;
+  <img src="screenshots/IMG_0867.jpeg" width="180" alt="iRAM+ screenshot 3">
 </p>
 
-## Credits
-- *NovaDev404* - iRAM+ creator
-- *Huge_Black* - Creator of GetMoreRam
-- *Stossy11* - For StosSign  
-- *SideStore* - Anisette Data fetching codes are taken from SideStore
-- *Sayborduu* - For fixing a 2FA bug in the code
+<p align="center">
+  <img src="screenshots/IMG_0868.PNG" width="180" alt="iRAM+ screenshot 4">
+  &nbsp;&nbsp;
+  <img src="screenshots/IMG_0869.PNG" width="180" alt="iRAM+ screenshot 5">
+  &nbsp;&nbsp;
+  <img src="screenshots/IMG_0870.PNG" width="180" alt="iRAM+ screenshot 6">
+</p>
+
+---
+
+## 🙏 Credits
+
+- **NovaDev404** — Creator of iRAM+
+- **Huge_Black** — Creator of GetMoreRam
+- **Stossy11** — Creator of StosSign
+- **SideStore** — Anisette data-fetching code
+
+---
+
+## 📄 License
+
+See the [LICENSE](LICENSE) file for more information.
