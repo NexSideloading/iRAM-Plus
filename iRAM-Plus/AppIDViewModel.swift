@@ -31,35 +31,13 @@ class AppIDModel : ObservableObject, Hashable {
     }
     
     func addIncreasedMemory() async throws {
-        func logging(text: String) {
-            Task { @MainActor [weak self] in
-                self?.result += "\(text)\n"
-            }
-        }
-        
-        logging(text: "=== Starting Memory Limit Enablement ===")
-
         guard let team = DataManager.shared.model.team, let session = DataManager.shared.model.session else {
-            logging(text: "ERROR: No team or session found. Please login first.")
             throw "Please Login First"
         }
 
-        logging(text: "Team: \(String(team.identifier.prefix(8)) + "...") (\(team.identifier))")
-        logging(text: "Session: dsid=\(session.dsid)")
-        logging(text: "AppID: \(appID.name) (\(appID.bundleIdentifier))")
-
-        logging(text: "Refreshing Anisette data if needed...")
-        try await AppleAPI.shared.refreshAnisetteDataIfNeeded(for: session)
-        logging(text: "Anisette data refresh completed")
-
         let enableIncreasedMemoryLimit = UserDefaults.standard.bool(forKey: "enableIncreasedMemoryLimit")
         let enableExtendedVirtualAddressing = UserDefaults.standard.bool(forKey: "enableExtendedVirtualAddressing")
-
-        logging(text: "Capabilities to enable:")
-        logging(text: "- Increased Memory Limit: \(enableIncreasedMemoryLimit)")
-        logging(text: "- Extended Virtual Addressing: \(enableExtendedVirtualAddressing)")
         
-        // Build capabilities array based on settings
         var capabilities: [String] = []
         
         if enableIncreasedMemoryLimit {
@@ -70,10 +48,7 @@ class AppIDModel : ObservableObject, Hashable {
             capabilities.append("EXTENDED_VIRTUAL_ADDRESSING")
         }
         
-        logging(text: "Calling AppleAPI.shared.updateAppID with \(capabilities.count) capabilities")
         let cool = try await AppleAPI.shared.updateAppID(appID, capabilities: capabilities, team: team, session: session)
-        
-        logging(text: "Request successful!")
         
         await MainActor.run {
             var successMessage = "✅ Success! "
@@ -98,8 +73,6 @@ class AppIDModel : ObservableObject, Hashable {
             }
             result = successMessage
         }
-        
-        logging(text: "=== Memory Limit Enablement Completed Successfully ===")
     }
     
 }
