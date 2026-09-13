@@ -683,10 +683,9 @@ struct AppsListSlide: View {
                         }
                     }
                     .padding(.horizontal)
+                    .padding(.bottom) // Add padding at bottom
                 }
             }
-            
-            Spacer()
         }
         .frame(maxWidth: .infinity)
         .task {
