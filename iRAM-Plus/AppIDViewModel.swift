@@ -6,8 +6,9 @@
 //
 import SwiftUI
 import Foundation
-import StosSign_API_NoCertificate
+import StosSign_API
 import StosSign_Auth
+import StosSign_Common
 
 class AppIDModel : ObservableObject, Hashable {
     static func == (lhs: AppIDModel, rhs: AppIDModel) -> Bool {
@@ -58,120 +59,20 @@ class AppIDModel : ObservableObject, Hashable {
         logging(text: "- Increased Memory Limit: \(enableIncreasedMemoryLimit)")
         logging(text: "- Extended Virtual Addressing: \(enableExtendedVirtualAddressing)")
         
-        let dateFormatter = ISO8601DateFormatter()
-        let httpHeaders = [
-            "Content-Type": "application/vnd.api+json",
-            "User-Agent": "akd/1.0 CFNetwork/1333.0.4",
-            "Accept": "application/vnd.api+json",
-            "Accept-Language": "en-us",
-            "X-Apple-App-Info": "com.apple.gs.akd.auth",
-            "X-Apple-I-Identity-Id": session.dsid,
-            "X-Apple-GS-Token": session.authToken,
-            "X-Apple-I-MD-M": session.anisetteData.machineID,
-            "X-Apple-I-MD": session.anisetteData.oneTimePassword,
-            "X-Apple-I-MD-LU": session.anisetteData.localUserID,
-            "X-Apple-I-MD-RINFO": session.anisetteData.routingInfo.description,
-            "X-Mme-Device-Id": session.anisetteData.deviceUniqueIdentifier,
-            "X-MMe-Client-Info": session.anisetteData.deviceDescription,
-            "X-Apple-I-Client-Time": dateFormatter.string(from:session.anisetteData.date),
-            "X-Apple-Locale": session.anisetteData.locale.identifier,
-            "X-Apple-I-TimeZone": session.anisetteData.timeZone.abbreviation()!
-        ] as [String : String];
-        
-        logging(text: "HTTP Headers prepared (excluding sensitive tokens)")
-        logging(text: "Request URL: https://developerservices2.apple.com/services/v1/bundleIds/\(appID.identifier)")
-        
         // Build capabilities array based on settings
-        var capabilities: [[String: Any]] = []
+        var capabilities: [String] = []
         
         if enableIncreasedMemoryLimit {
-            capabilities.append([
-                "relationships": [
-                    "capability": [
-                        "data": [
-                            "id": "INCREASED_MEMORY_LIMIT",
-                            "type": "capabilities"
-                        ]
-                    ]
-                ],
-                "type": "bundleIdCapabilities",
-                "attributes": [
-                    "settings": [],
-                    "enabled": true
-                ]
-            ])
+            capabilities.append("INCREASED_MEMORY_LIMIT")
         }
         
         if enableExtendedVirtualAddressing {
-            capabilities.append([
-                "relationships": [
-                    "capability": [
-                        "data": [
-                            "id": "EXTENDED_VIRTUAL_ADDRESSING",
-                            "type": "capabilities"
-                        ]
-                    ]
-                ],
-                "type": "bundleIdCapabilities",
-                "attributes": [
-                    "settings": [],
-                    "enabled": true
-                ]
-            ])
+            capabilities.append("EXTENDED_VIRTUAL_ADDRESSING")
         }
         
-        let requestBody: [String: Any] = [
-            "data": [
-                "relationships": [
-                    "bundleIdCapabilities": [
-                        "data": capabilities
-                    ]
-                ],
-                "id": appID.identifier,
-                "attributes": [
-                    "hasExclusiveManagedCapabilities": false,
-                    "teamId": team.identifier,
-                    "bundleType": "bundle",
-                    "identifier": appID.bundleIdentifier,
-                    "seedId": team.identifier,
-                    "name": appID.name
-                ],
-                "type": "bundleIds"
-            ]
-        ]
+        logging(text: "Calling AppleAPI.shared.updateAppID with \(capabilities.count) capabilities")
+        let cool = try await AppleAPI.shared.updateAppID(appID, capabilities: capabilities, team: team, session: session)
         
-        logging(text: "Request body prepared with \(capabilities.count) capabilities")
-
-        var request = URLRequest(url: URL(string: "https://developerservices2.apple.com/services/v1/bundleIds/\(appID.identifier)")!)
-        request.httpMethod = "PATCH"
-        request.allHTTPHeaderFields = httpHeaders
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        logging(text: "Sending PATCH request to Apple Developer API...")
-        let (data, response) = try await URLSession.shared.data(for: request)
-        let responseString = String(data: data, encoding: .utf8) ?? "Unable to decode response."
-
-        logging(text: "Response received")
-        if let httpResponse = response as? HTTPURLResponse {
-            logging(text: "HTTP Status: \(httpResponse.statusCode)")
-        }
-
-        let enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging")
-        if enableDebugging {
-            logging(text: "Response body: \(responseString)")
-        }
-
-        if let httpResponse = response as? HTTPURLResponse,
-           !(200..<300).contains(httpResponse.statusCode) {
-            let errorMessage = "Apple API request failed with HTTP \(httpResponse.statusCode)."
-            logging(text: "ERROR: \(errorMessage)")
-            if enableDebugging {
-                throw "\(errorMessage)\n\(responseString)"
-            } else {
-                throw errorMessage
-            }
-        }
-
         logging(text: "Request successful!")
         
         await MainActor.run {
@@ -191,8 +92,9 @@ class AppIDModel : ObservableObject, Hashable {
                 successMessage += "\(enabledCapabilities.joined(separator: " and ")) capabilities have been enabled."
             }
             
+            let enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging")
             if enableDebugging {
-                successMessage += "\n\nAPI Response:\n\(responseString)"
+                successMessage += "\n\nAPI Response:\n\(cool)"
             }
             result = successMessage
         }

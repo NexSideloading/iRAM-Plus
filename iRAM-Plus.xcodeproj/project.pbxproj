@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		176645A82FFCAF8800969D1F /* StosSign_API_NoCertificate in Frameworks */ = {isa = PBXBuildFile; productRef = 176645A72FFCAF8800969D1F /* StosSign_API_NoCertificate */; };
-		176645AA2FFCAF8800969D1F /* StosSign_Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 176645A92FFCAF8800969D1F /* StosSign_Auth */; };
+		4E9544D130558D4400540EF8 /* StosSign_API in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D030558D4400540EF8 /* StosSign_API */; };
+		4E9544D330558D4400540EF8 /* StosSign_Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D230558D4400540EF8 /* StosSign_Auth */; };
+		4E9544D530558D4400540EF8 /* StosSign_Common in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D430558D4400540EF8 /* StosSign_Common */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,8 +42,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				176645AA2FFCAF8800969D1F /* StosSign_Auth in Frameworks */,
-				176645A82FFCAF8800969D1F /* StosSign_API_NoCertificate in Frameworks */,
+				4E9544D330558D4400540EF8 /* StosSign_Auth in Frameworks */,
+				4E9544D130558D4400540EF8 /* StosSign_API in Frameworks */,
+				4E9544D530558D4400540EF8 /* StosSign_Common in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,8 +95,9 @@
 			);
 			name = iRAM-Plus;
 			packageProductDependencies = (
-				176645A72FFCAF8800969D1F /* StosSign_API_NoCertificate */,
-				176645A92FFCAF8800969D1F /* StosSign_Auth */,
+				4E9544D030558D4400540EF8 /* StosSign_API */,
+				4E9544D230558D4400540EF8 /* StosSign_Auth */,
+				4E9544D430558D4400540EF8 /* StosSign_Common */,
 			);
 			productName = iRAM-Plus;
 			productReference = 173496F02D847E82007994DB /* iRAM-Plus.app */;
@@ -125,7 +128,7 @@
 			mainGroup = 173496E72D847E82007994DB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				176645A62FFCAF8800969D1F /* XCRemoteSwiftPackageReference "StosSign" */,
+				4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 173496F12D847E82007994DB /* Products */;
@@ -365,26 +368,31 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		176645A62FFCAF8800969D1F /* XCRemoteSwiftPackageReference "StosSign" */ = {
+		4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hugeBlack/StosSign";
+			repositoryURL = "https://github.com/stossy11/StosSign";
 			requirement = {
-				revision = 69397b49fc8a1bd87ce8f65cc0b403831f838735;
-				kind = revision;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		176645A72FFCAF8800969D1F /* StosSign_API_NoCertificate */ = {
+		4E9544D030558D4400540EF8 /* StosSign_API */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 176645A62FFCAF8800969D1F /* XCRemoteSwiftPackageReference "StosSign" */;
-			productName = StosSign_API_NoCertificate;
+			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
+			productName = StosSign_API;
 		};
-		176645A92FFCAF8800969D1F /* StosSign_Auth */ = {
+		4E9544D230558D4400540EF8 /* StosSign_Auth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 176645A62FFCAF8800969D1F /* XCRemoteSwiftPackageReference "StosSign" */;
+			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
 			productName = StosSign_Auth;
+		};
+		4E9544D430558D4400540EF8 /* StosSign_Common */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
+			productName = StosSign_Common;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

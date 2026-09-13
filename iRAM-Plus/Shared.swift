@@ -5,8 +5,9 @@
 //  Created by s s on 2025/3/15.
 //
 import SwiftUI
-import StosSign_API_NoCertificate
+import StosSign_API
 import StosSign_Auth
+import StosSign_Common
 
 class AlertHelper<T> : ObservableObject {
     @Published var show = false
@@ -94,10 +95,6 @@ class SharedModel: ObservableObject {
     
     init() {
         AnisetteDataHelper.shared.url = URL(string: anisetteServerURL)
-        AppleAPI.shared.anisetteDataProvider = {
-            AnisetteDataHelper.shared.url = URL(string: self.anisetteServerURL)
-            return try await AnisetteDataHelper.shared.getAnisetteData(refresh: true)
-        }
     }
 }
 

@@ -5,8 +5,9 @@
 //  Created by s s on 2025/3/15.
 //
 import SwiftUI
-import StosSign_API_NoCertificate
+import StosSign_API
 import StosSign_Auth
+import StosSign_Common
 
 class LoginViewModel: ObservableObject {
     @Published var appleAccount = ""
@@ -223,6 +224,7 @@ class LoginViewModel: ObservableObject {
                 logging(text: "Error was due to user cancellation")
                 throw CancellationError()
             }
+            print(error)
             logging(text: "Throwing error to caller")
             throw error
         }

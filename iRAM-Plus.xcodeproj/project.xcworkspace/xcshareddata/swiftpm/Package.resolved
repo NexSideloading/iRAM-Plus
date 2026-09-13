@@ -1,5 +1,5 @@
 {
-  "originHash" : "updated-to-hugeblack-stossign",
+  "originHash" : "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
   "pins" : [
     {
       "identity" : "big-num",
@@ -20,11 +20,21 @@
       }
     },
     {
+      "identity" : "openssl",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/OpenSSL",
+      "state" : {
+        "revision" : "4b1188ba947ddc23d03b13096b9e44b804e146c9",
+        "version" : "3.6.3000"
+      }
+    },
+    {
       "identity" : "stossign",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hugeBlack/StosSign",
+      "location" : "https://github.com/stossy11/StosSign",
       "state" : {
-        "revision" : "69397b49fc8a1bd87ce8f65cc0b403831f838735"
+        "branch" : "main",
+        "revision" : "01dd7bc4f5084ade9e2ebbc7e338dc2e3f454d77"
       }
     },
     {
@@ -32,8 +42,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "a9a5efd40eaf558a2bcd48d64b1d1646be686008",
-        "version" : "1.7.1"
+        "revision" : "d9a5b37470adc940d22c3bcd5ca6953a516b727f",
+        "version" : "1.7.2"
+      }
+    },
+    {
+      "identity" : "swift-certificates",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-certificates.git",
+      "state" : {
+        "revision" : "c8aece90ea05f9866bd392a5bf13b5cae56c0e03",
+        "version" : "1.20.0"
       }
     },
     {
@@ -41,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto",
       "state" : {
-        "revision" : "1b6b2e274e85105bfa155183145a1dcfd63331f1",
-        "version" : "4.5.0"
+        "revision" : "da9d28d69ebe3894b18376c8f2395c2f37b8448f",
+        "version" : "4.5.2"
       }
     },
     {
