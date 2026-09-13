@@ -62,19 +62,19 @@ Open the app and check whether **Increased Memory Limit** is now enabled.
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="screenshots/IMG_0798.png" width="180" alt="iRAM+ screenshot 1">
+  <img src="screenshots/IMG_0865.PNG" width="180" alt="iRAM+ screenshot 1">
   &nbsp;&nbsp;
-  <img src="screenshots/IMG_0799.png" width="180" alt="iRAM+ screenshot 2">
+  <img src="screenshots/IMG_0864.PNG" width="180" alt="iRAM+ screenshot 2">
   &nbsp;&nbsp;
-  <img src="screenshots/IMG_0800.jpeg" width="180" alt="iRAM+ screenshot 3">
+  <img src="screenshots/IMG_0867.jpeg" width="180" alt="iRAM+ screenshot 3">
 </p>
 
 <p align="center">
-  <img src="screenshots/IMG_0801.png" width="180" alt="iRAM+ screenshot 4">
+  <img src="screenshots/IMG_0868.PNG" width="180" alt="iRAM+ screenshot 4">
   &nbsp;&nbsp;
-  <img src="screenshots/IMG_0802.png" width="180" alt="iRAM+ screenshot 5">
+  <img src="screenshots/IMG_0869.PNG" width="180" alt="iRAM+ screenshot 5">
   &nbsp;&nbsp;
-  <img src="screenshots/IMG_0803.png" width="180" alt="iRAM+ screenshot 6">
+  <img src="screenshots/IMG_0870.PNG" width="180" alt="iRAM+ screenshot 6">
 </p>
 
 ---
