@@ -40,6 +40,8 @@ func getAppIconName(for bundleID: String) -> String {
         return "iram"
     } else if bundleID.contains("com.stossy11.melonx") || bundleID.contains("org.ryujinx.ryujinx") {
         return "melo"
+    } else if bundleID.contains("com.kdt.livecontainer") {
+        return "livecontainer"
     } else if bundleID.contains("net.kdt.pojavlauncher") {
         return "pojav"
     } else if bundleID.contains("org.ppsspp.ppsspp") {
