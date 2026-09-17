@@ -73,11 +73,9 @@ class LoginViewModel: ObservableObject {
             isAuthenticationCancellationRequested = false
         }
 
-        await MainActor.run {
-            progressCallback?(0.0, "Starting...")
-        }
+        progressCallback?(0.0, "Starting...")
 
-        func logging(text: String) {
+        @Sendable func logging(text: String) {
             Task { @MainActor [weak self] in
                 self?.logs.append("\(text)\n")
             }
@@ -255,7 +253,7 @@ class LoginViewModel: ObservableObject {
     
     func fetchTeams(for account: Account, session: AppleAPISession) async throws -> [Team]
     {
-        func logging(text: String) {
+        @Sendable func logging(text: String) {
             Task { @MainActor [weak self] in
                 self?.logs.append("\(text)\n")
             }
@@ -282,7 +280,7 @@ class LoginViewModel: ObservableObject {
     }
     
     func verifyTwoFactorCode(_ code: String) async throws {
-        func logging(text: String) {
+        @Sendable func logging(text: String) {
             Task { @MainActor [weak self] in
                 self?.logs.append("\(text)\n")
             }
@@ -291,9 +289,7 @@ class LoginViewModel: ObservableObject {
         logging(text: "=== Starting 2FA Verification ===")
         logging(text: "Verification code provided: \(code.isEmpty ? "EMPTY" : "HAS_VALUE")")
 
-        await MainActor.run {
-            verificationCode = code
-        }
+        verificationCode = code
         logging(text: "Submitting verification code to AppleAPI")
         submitVerificationCode()
 
@@ -304,14 +300,16 @@ class LoginViewModel: ObservableObject {
 
         logging(text: "Waiting for authentication to complete (10 second timeout)...")
         while Date().timeIntervalSince(startTime) < 10 {
-            if await MainActor.run(body: { DataManager.shared.model.session != nil }) {
-                sessionSet = true
+            sessionSet = await MainActor.run { DataManager.shared.model.session != nil }
+            accountSet = await MainActor.run { DataManager.shared.model.account != nil }
+            
+            if sessionSet {
                 logging(text: "Session is now set")
             }
-            if await MainActor.run(body: { DataManager.shared.model.account != nil }) {
-                accountSet = true
+            if accountSet {
                 logging(text: "Account is now set")
             }
+            
             if sessionSet && accountSet {
                 logging(text: "Both session and account are set - authentication complete")
                 break
