@@ -375,35 +375,6 @@ final class AnisetteDataHelper
             throw "No Anisette Server Found!"
         }
         
-        self.printOut("Using custom client_info")
-                        
-        self.clientInfo = "<iMac18,3> <macOS;27.0;26A5378j> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
-        self.userAgent = "AuthKit/1 (Macintosh; OS X 27.0) (com.apple.akd/1.0)"
-        self.printOut("Client-Info: \(self.clientInfo!)")
-        self.printOut("User-Agent: \(self.userAgent!)")
-        
-        if Keychain.shared.identifier == nil {
-            self.printOut("Generating identifier")
-            var bytes = [Int8](repeating: 0, count: 16)
-            let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-            
-            if status != errSecSuccess {
-                self.printOut("ERROR GENERATING IDENTIFIER!!! \(status)")
-                throw "Couldn't generate identifier"
-            }
-            
-            Keychain.shared.identifier = Data(bytes: &bytes, count: bytes.count).base64EncodedString()
-        }
-        
-        let decoded = Data(base64Encoded: Keychain.shared.identifier!)!
-        self.mdLu = decoded.sha256().hexEncodedString()
-        self.printOut("X-Apple-I-MD-LU: \(self.mdLu!)")
-        let uuid: UUID = decoded.object()
-        self.deviceId = uuid.uuidString.uppercased()
-        self.printOut("X-Mme-Device-Id: \(self.deviceId!)")
-
-        // Client info on Anisette Servers are out of date for latest GSA
-        /*
         self.printOut("Trying to get client_info from: \(self.url!.absoluteString)")
         let clientInfoURL = self.url!.appendingPathComponent("v3").appendingPathComponent("client_info")
         
@@ -421,59 +392,46 @@ final class AnisetteDataHelper
         let responseString = String(data: data, encoding: .utf8) ?? "not utf8"
         self.printOut("Client info response: \(responseString)")
 
-            do {
-                
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: String] {
-                    if let clientInfo = json["client_info"] {
-                        self.printOut("Server is V3")
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: String] {
+                if let clientInfo = json["client_info"] {
+                    self.printOut("Server is V3")
+                    
+                    self.clientInfo = clientInfo
+                    self.userAgent = json["user_agent"]!
+                    self.printOut("Client-Info: \(self.clientInfo!)")
+                    self.printOut("User-Agent: \(self.userAgent!)")
+                    
+                    if Keychain.shared.identifier == nil {
+                        self.printOut("Generating identifier")
+                        var bytes = [Int8](repeating: 0, count: 16)
+                        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
                         
-                        // Apple started rejecting GrandSlam requests in Sep 2026
-                        // when X-MMe-Client-Info identifies the client as Xcode.
-                        // Report the actual auth daemon (akd) instead.
-                        let fixedClientInfo = clientInfo.replacingOccurrences(
-                            of: #"\(com\.apple\.dt\.Xcode/[^)]+\)"#,
-                            with: "(com.apple.akd/1.0)",
-                            options: .regularExpression
-                        )
-                        if fixedClientInfo != clientInfo {
-                            self.printOut("Rewriting blocked Xcode client identifier to akd")
-                        }
-                        self.clientInfo = fixedClientInfo
-                        self.userAgent = json["user_agent"]!
-                        self.printOut("Client-Info: \(self.clientInfo!)")
-                        self.printOut("User-Agent: \(self.userAgent!)")
-                        
-                        if Keychain.shared.identifier == nil {
-                            self.printOut("Generating identifier")
-                            var bytes = [Int8](repeating: 0, count: 16)
-                            let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-                            
-                            if status != errSecSuccess {
-                                self.printOut("ERROR GENERATING IDENTIFIER!!! \(status)")
-                                throw "Couldn't generate identifier"
-                            }
-                            
-                            Keychain.shared.identifier = Data(bytes: &bytes, count: bytes.count).base64EncodedString()
+                        if status != errSecSuccess {
+                            self.printOut("ERROR GENERATING IDENTIFIER!!! \(status)")
+                            throw "Couldn't generate identifier"
                         }
                         
-                        let decoded = Data(base64Encoded: Keychain.shared.identifier!)!
-                        self.mdLu = decoded.sha256().hexEncodedString()
-                        self.printOut("X-Apple-I-MD-LU: \(self.mdLu!)")
-                        let uuid: UUID = decoded.object()
-                        self.deviceId = uuid.uuidString.uppercased()
-                        self.printOut("X-Mme-Device-Id: \(self.deviceId!)")
-                        
-                        return
-                    } else { 
-                        self.printOut("ERROR: v1 server is not supported, missing client_info in response")
-                        throw "This anisette server uses an outdated protocol (v1) that is not supported. Please try a different server."
+                        Keychain.shared.identifier = Data(bytes: &bytes, count: bytes.count).base64EncodedString()
                     }
+                    
+                    let decoded = Data(base64Encoded: Keychain.shared.identifier!)!
+                    self.mdLu = decoded.sha256().hexEncodedString()
+                    self.printOut("X-Apple-I-MD-LU: \(self.mdLu!)")
+                    let uuid: UUID = decoded.object()
+                    self.deviceId = uuid.uuidString.uppercased()
+                    self.printOut("X-Mme-Device-Id: \(self.deviceId!)")
+                    
+                    return
                 } else { 
-                    self.printOut("ERROR: Couldn't parse client info response as JSON")
-                    throw "Couldn't fetch client info. The anisette server returned invalid data. Try a different server."
+                    self.printOut("ERROR: v1 server is not supported, missing client_info in response")
+                    throw "This anisette server uses an outdated protocol (v1) that is not supported. Please try a different server."
                 }
+            } else { 
+                self.printOut("ERROR: Couldn't parse client info response as JSON")
+                throw "Couldn't fetch client info. The anisette server returned invalid data. Try a different server."
             }
-        */
+        }
     }
     
     func fetchAnisetteV3(_ identifier: String, _ adiPb: String) async throws -> AnisetteData {
