@@ -108,3 +108,28 @@ saved in Keychain only when the existing save-login setting is enabled.
 The `iRAM-PlusTests` target covers code validation, duplicate submissions, phone
 selection, retry/channel changes, and cancellation. End-to-end authentication
 still requires an Apple Account and a reachable anisette server on a device.
+
+### Build an IPA on macOS
+
+Install full Xcode (tested with Xcode 26.3), open it once to finish setup, then
+run from the repository directory:
+
+```sh
+./build-ipa.sh
+```
+
+The script builds a Release archive for physical iOS devices and creates
+`build/iRAM-Plus.ipa`. Import this **unsigned IPA** into SideStore, AltStore, or
+Sideloadly to sign and install it. No signing certificate is needed to build it.
+The first build downloads dependencies; subsequent builds reuse the local cache.
+Build output is also saved to `build/build-ipa.log`.
+
+To choose an output path or Xcode installation:
+
+```sh
+./build-ipa.sh --output ~/Desktop/iRAM-Plus.ipa
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./build-ipa.sh
+```
+
+Run `./build-ipa.sh --help` for build-cache options. The script uses the committed
+package lockfile so the IPA includes the pinned authentication dependencies.
