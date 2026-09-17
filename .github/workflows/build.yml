@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Build using xcodebuild command
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       scheme: iRAM-Plus
       archive_path: archive
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.4'
+          xcode-version: '16.4'
       - name: Checkout
         uses: actions/checkout@v3
         with:

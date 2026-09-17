@@ -29,6 +29,11 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference skipped="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="AABB001030558D4400540EF8" BuildableName="iRAM-PlusTests.xctest" BlueprintName="iRAM-PlusTests" ReferencedContainer="container:iRAM-Plus.xcodeproj" />
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Release"

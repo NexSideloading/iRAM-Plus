@@ -9,7 +9,6 @@
 import Foundation
 import CryptoKit
 import StosSign_API
-import StosSign_Auth
 import StosSign_Common
 
 final class AnisetteDataHelper
