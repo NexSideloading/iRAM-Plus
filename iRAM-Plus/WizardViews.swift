@@ -8,7 +8,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import StosSign_API
-import StosSign_Auth
 import StosSign_Common
 import Combine
 
@@ -320,118 +319,146 @@ struct LoginSlide: View {
     @State private var appleAccount: String = ""
     @State private var password: String = ""
     @State private var isLoggingIn = false
-    @State private var verificationCode: String = ""
     @FocusState private var verificationCodeFocused: Bool
     @State private var previousStep: WizardStep = .welcome
-    
+
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Button(action: {
-                    viewModel.goToStep(.welcome)
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
+        ScrollView {
+            VStack(spacing: 20) {
+                HStack {
+                    Button(action: {
+                        viewModel.loginViewModel.cancelAuthentication()
+                        viewModel.goToStep(.welcome)
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.blue)
                     }
-                    .font(.headline)
-                    .foregroundStyle(.blue)
+                    Spacer()
                 }
-                Spacer()
-            }
-            .padding(.horizontal)
-            .padding(.top, 10)
-            Spacer()
-            
-            Text("Sign In")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(.primary)
-            
-            Text("Sign in with the Apple Account you used to sign your apps")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
-            // Login Form
-            VStack(spacing: 15) {
-                TextField("Apple Account", text: $appleAccount)
-                    .textFieldStyle(.roundedBorder)
-                    .autocapitalization(.none)
-                    .keyboardType(.emailAddress)
-                    .disabled(isLoggingIn || viewModel.loginViewModel.isLoginInProgress)
-                
-                SecureField("Password", text: $password)
-                    .textFieldStyle(.roundedBorder)
-                    .disabled(isLoggingIn || viewModel.loginViewModel.isLoginInProgress)
-                
-                if viewModel.loginViewModel.needVerificationCode {
-                    TextField("Verification Code", text: $verificationCode)
+                .padding(.top, 10)
+                Spacer()
+
+                Text("Sign In")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(.primary)
+
+                Text("Sign in with the Apple Account you used to sign your apps")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                // Login Form
+                VStack(spacing: 15) {
+                    TextField("Apple Account", text: $appleAccount)
                         .textFieldStyle(.roundedBorder)
                         .autocapitalization(.none)
-                        .keyboardType(.numberPad)
-                        .disabled(viewModel.loginViewModel.isVerificationCodeSubmitting)
-                        .id("verificationCodeInput")
-                        .focused($verificationCodeFocused)
-                }
-                
-                if (isLoggingIn || viewModel.loginViewModel.isLoginInProgress) && !viewModel.loginViewModel.needVerificationCode {
-                    VStack(spacing: 8) {
-                        ProgressView(value: viewModel.loginProgress)
-                            .tint(.blue)
-                        Text(viewModel.loginStatus)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                Button(action: {
-                    Task { await loginButtonClicked() }
-                }) {
-                    if viewModel.loginViewModel.needVerificationCode && viewModel.loginViewModel.isVerificationCodeSubmitting {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .tint(.white)
-                            Text("Verifying...")
-                                .font(.headline)
-                                .foregroundStyle(.white)
+                        .keyboardType(.emailAddress)
+                        .disabled(isLoggingIn || viewModel.loginViewModel.isLoginInProgress)
+
+                    SecureField("Password", text: $password)
+                        .textFieldStyle(.roundedBorder)
+                        .disabled(isLoggingIn || viewModel.loginViewModel.isLoginInProgress)
+
+                    if viewModel.loginViewModel.needVerificationCode {
+                        Text(viewModel.loginViewModel.verificationMessage)
+                            .font(.subheadline)
+                        if let error = viewModel.loginViewModel.verificationRequest?.error {
+                            Text(error).font(.caption).foregroundStyle(.red)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.blue.gradient)
-                        .cornerRadius(15)
-                    } else {
-                        Text(viewModel.loginViewModel.needVerificationCode ? "Verify" : "Sign In")
-                            .font(.headline)
-                            .foregroundStyle(.white)
+                        if !viewModel.loginViewModel.isChoosingDeliveryMethod {
+                            TextField("Verification Code", text: Binding(get: { viewModel.loginViewModel.verificationCode }, set: { viewModel.loginViewModel.verificationCode = $0 }))
+                                .textFieldStyle(.roundedBorder)
+                                .keyboardType(.numberPad)
+                                .textContentType(.oneTimeCode)
+                                .disabled(viewModel.loginViewModel.isVerificationCodeSubmitting)
+                                .focused($verificationCodeFocused)
+                        }
+                        if !viewModel.loginViewModel.phoneNumbers.isEmpty {
+                            Picker("Trusted phone number", selection: Binding(get: { viewModel.loginViewModel.selectedPhoneID }, set: { viewModel.loginViewModel.selectedPhoneID = $0 })) {
+                                ForEach(viewModel.loginViewModel.phoneNumbers) { phone in
+                                    Text(phone.number.isEmpty ? "Trusted number" : phone.number).tag(phone.id)
+                                }
+                            }
+                            .disabled(viewModel.loginViewModel.isVerificationCodeSubmitting)
+                        }
+                        HStack {
+                            Button("Apple Device") { viewModel.loginViewModel.requestTrustedDeviceCode() }
+                            Button("Text Message") { viewModel.loginViewModel.requestSMSCode() }
+                            Button("Phone Call") { viewModel.loginViewModel.requestVoiceCode() }
+                        }
+                        .font(.caption)
+                        .disabled(viewModel.loginViewModel.isVerificationCodeSubmitting)
+                        Button("Cancel Sign In", role: .cancel) {
+                            viewModel.loginViewModel.cancelAuthentication()
+                        }
+                    }
+
+                    if (isLoggingIn || viewModel.loginViewModel.isLoginInProgress) && !viewModel.loginViewModel.needVerificationCode {
+                        VStack(spacing: 8) {
+                            ProgressView(value: viewModel.loginProgress)
+                                .tint(.blue)
+                            Text(viewModel.loginStatus)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 8)
+                    }
+
+                    Button(action: {
+                        Task { await loginButtonClicked() }
+                    }) {
+                        if viewModel.loginViewModel.needVerificationCode && viewModel.loginViewModel.isVerificationCodeSubmitting {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .tint(.white)
+                                Text("Please wait...")
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                            }
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(.blue.gradient)
                             .cornerRadius(15)
+                        } else {
+                            Text(viewModel.loginViewModel.needVerificationCode ? "Verify" : "Sign In")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(.blue.gradient)
+                                .cornerRadius(15)
+                        }
                     }
+                    .disabled(viewModel.loginViewModel.needVerificationCode
+                        ? !viewModel.loginViewModel.canSubmitVerificationCode || viewModel.loginViewModel.isVerificationCodeSubmitting
+                        : isLoggingIn || viewModel.loginViewModel.isLoginInProgress || appleAccount.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                 }
-                .disabled(viewModel.loginViewModel.isVerificationCodeSubmitting)
-            }
-            .padding()
-            .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(15)
-            .padding(.horizontal)
-            
-            Text("All authentication is done on-device. Your credentials are never sent to third-party services.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                .padding()
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .cornerRadius(15)
                 .padding(.horizontal)
-            
-            Spacer()
+
+                Text("All authentication is done on-device. Your credentials are never sent to third-party services.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
         .alert("Error", isPresented: $viewModel.showError) {
             Button("Try Again", role: .cancel) {
                 // Reset verification code state to allow re-entry
                 viewModel.loginViewModel.resetVerificationCodeState()
-                verificationCode = ""
+                viewModel.loginViewModel.verificationCode = ""
             }
             Button("Clear Keychain") {
                 viewModel.clearKeychain()
@@ -480,11 +507,19 @@ struct LoginSlide: View {
                     appleAccount = ""
                     password = ""
                 }
-                verificationCode = ""
+                viewModel.loginViewModel.verificationCode = ""
                 isLoggingIn = false
                 verificationCodeFocused = false
             }
             previousStep = newStep
+        }
+        .onDisappear {
+            viewModel.loginViewModel.cancelAuthentication()
+        }
+        .onChange(of: viewModel.loginViewModel.isVerificationCodeSubmitting) { submitting in
+            if !submitting && viewModel.loginViewModel.needVerificationCode {
+                verificationCodeFocused = true
+            }
         }
         .onAppear {
             // Auto-fill from keychain on initial appearance if enabled
@@ -498,42 +533,30 @@ struct LoginSlide: View {
             }
         }
     }
-    
+
     func loginButtonClicked() async {
         if viewModel.loginViewModel.needVerificationCode {
-            do {
-                try await viewModel.loginViewModel.verifyTwoFactorCode(verificationCode)
-                await MainActor.run {
-                    isLoggingIn = false
-                    // Go directly to apps page after successful 2FA verification
-                    viewModel.goToStep(.apps)
-                }
-            } catch {
-                await MainActor.run {
-                    viewModel.errorMessage = error.localizedDescription
-                    viewModel.showError = true
-                    isLoggingIn = false
-                }
-            }
+            viewModel.loginViewModel.submitVerificationCode()
             return
         }
+        guard !isLoggingIn, !viewModel.loginViewModel.isLoginInProgress else { return }
 
         isLoggingIn = true
         viewModel.loginViewModel.appleAccount = appleAccount
         viewModel.loginViewModel.password = password
-        
+
         // Connect progress callback
         viewModel.loginViewModel.progressCallback = { progress, status in
             Task { @MainActor in
                 viewModel.updateLoginProgress(progress: progress, status: status)
             }
         }
-        
+
         // Start authentication in background so UI doesn't freeze
         Task {
             do {
                 let result = try await viewModel.loginViewModel.authenticate()
-                
+
                 await MainActor.run {
                     isLoggingIn = false
                     if result {
@@ -553,39 +576,36 @@ struct LoginSlide: View {
             } catch {
                 await MainActor.run {
                     isLoggingIn = false
-                    // If 2FA is needed, don't show error - the 2FA input will be shown
-                    if !viewModel.loginViewModel.needVerificationCode {
-                        viewModel.errorMessage = error.localizedDescription
-                        viewModel.showError = true
-                    }
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showError = true
                 }
             }
         }
     }
-    
+
     private func handleSideStoreImport(url: URL) {
         guard url.startAccessingSecurityScopedResource() else {
             viewModel.errorMessage = "Could not access the file"
             viewModel.showError = true
             return
         }
-        
+
         defer { url.stopAccessingSecurityScopedResource() }
-        
+
         do {
             let data = try Data(contentsOf: url)
             let account = try SideStoreAccountImporter.importAccount(from: data)
-            
+
             viewModel.loginViewModel.appleAccount = account.email
             viewModel.loginViewModel.password = account.password
-            
+
             // Connect progress callback
             viewModel.loginViewModel.progressCallback = { progress, status in
                 Task { @MainActor in
                     viewModel.updateLoginProgress(progress: progress, status: status)
                 }
             }
-            
+
             Task {
                 do {
                     try await viewModel.loginViewModel.login()
@@ -878,8 +898,10 @@ struct AddCapabilitySlide: View {
                         retryCount += 1
                         isAdding = false
                         // Retry after a short delay
-                        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                        addCapability()
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                            addCapability()
+                        }
                     } else {
                         // Final error after retries or other error
                         // Check if still logged in

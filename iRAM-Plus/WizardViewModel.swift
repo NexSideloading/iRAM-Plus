@@ -180,6 +180,7 @@ class WizardViewModel: ObservableObject {
     }
     
     func clearKeychain() {
+        loginViewModel.cancelAuthentication()
         let sharedModel = DataManager.shared.model
         Keychain.shared.adiPb = nil
         Keychain.shared.identifier = nil
@@ -195,11 +196,10 @@ class WizardViewModel: ObservableObject {
     }
     
     func resetLoginState() {
+        loginViewModel.cancelAuthentication()
         loginViewModel.appleAccount = ""
         loginViewModel.password = ""
-        loginViewModel.needVerificationCode = false
         loginViewModel.verificationCode = ""
-        loginViewModel.isLoginInProgress = false
         loginViewModel.resetVerificationCodeState()
         loginViewModel.logs = ""
         loginProgress = 0.0

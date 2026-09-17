@@ -6,7 +6,6 @@
 //
 import SwiftUI
 import StosSign_API
-import StosSign_Auth
 import StosSign_Common
 
 class AlertHelper<T> : ObservableObject {

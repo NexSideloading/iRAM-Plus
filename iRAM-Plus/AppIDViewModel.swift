@@ -7,7 +7,6 @@
 import SwiftUI
 import Foundation
 import StosSign_API
-import StosSign_Auth
 import StosSign_Common
 
 class AppIDModel : ObservableObject, Hashable {

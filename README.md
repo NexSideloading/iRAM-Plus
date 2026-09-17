@@ -91,3 +91,20 @@ Open the app and check whether **Increased Memory Limit** is now enabled.
 ## 📄 License
 
 See the [LICENSE](LICENSE) file for more information.
+
+### Apple Account sign-in and two-factor authentication
+
+Sign-in uses [SideSign](https://github.com/SideStore/SideSign) revision
+`df2b8e4257454f0c7629276d409d6e9d7953fdf6`, matching SideStore's dependency
+when this integration was updated. Choose **Apple Device**, **Text Message**, or
+**Phone Call**, then enter the six-digit code. If Apple provides multiple trusted
+numbers, select the number before requesting a code. Use the delivery buttons
+again to resend or change methods; incorrect codes can be retried in place.
+
+Sign-in completes only after authentication and developer-team lookup both
+succeed. Back and Cancel Sign In cancel the pending challenge. Credentials are
+saved in Keychain only when the existing save-login setting is enabled.
+
+The `iRAM-PlusTests` target covers code validation, duplicate submissions, phone
+selection, retry/channel changes, and cancellation. End-to-end authentication
+still requires an Apple Account and a reachable anisette server on a device.

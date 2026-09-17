@@ -6,9 +6,55 @@
 	objectVersion = 77;
 	objects = {
 
+        AABB001130558D4400540EF8 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = "iRAM-PlusTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+        AABB001230558D4400540EF8 = {isa = PBXFileSystemSynchronizedRootGroup; path = "iRAM-PlusTests"; sourceTree = "<group>"; };
+        AABB001330558D4400540EF8 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        AABB001430558D4400540EF8 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        AABB001530558D4400540EF8 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        AABB001730558D4400540EF8 = {isa = PBXContainerItemProxy; containerPortal = 173496E82D847E82007994DB; proxyType = 1; remoteGlobalIDString = 173496EF2D847E82007994DB; remoteInfo = "iRAM-Plus"; };
+        AABB001630558D4400540EF8 = {isa = PBXTargetDependency; target = 173496EF2D847E82007994DB; targetProxy = AABB001730558D4400540EF8; };
+        AABB001030558D4400540EF8 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = AABB001830558D4400540EF8;
+            buildPhases = (AABB001330558D4400540EF8, AABB001430558D4400540EF8, AABB001530558D4400540EF8);
+            buildRules = ();
+            dependencies = (AABB001630558D4400540EF8);
+            fileSystemSynchronizedGroups = (AABB001230558D4400540EF8);
+            name = "iRAM-PlusTests";
+            productName = "iRAM-PlusTests";
+            productReference = AABB001130558D4400540EF8;
+            productType = "com.apple.product-type.bundle.unit-test";
+        };
+        AABB001830558D4400540EF8 = {isa = XCConfigurationList; buildConfigurations = (AABB001930558D4400540EF8, AABB002030558D4400540EF8); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        AABB001930558D4400540EF8 = {isa = XCBuildConfiguration; name = Debug; buildSettings = {
+            BUNDLE_LOADER = "$(TEST_HOST)";
+            TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iRAM-Plus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iRAM-Plus";
+            GENERATE_INFOPLIST_FILE = YES;
+            IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+            PRODUCT_BUNDLE_IDENTIFIER = "com.novadev.iram-plus.tests";
+            PRODUCT_NAME = "$(TARGET_NAME)";
+            SDKROOT = iphoneos;
+            SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+            SWIFT_VERSION = 5.0;
+            TARGETED_DEVICE_FAMILY = "1,2";
+        }; };
+        AABB002030558D4400540EF8 = {isa = XCBuildConfiguration; name = Release; buildSettings = {
+            BUNDLE_LOADER = "$(TEST_HOST)";
+            TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iRAM-Plus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iRAM-Plus";
+            GENERATE_INFOPLIST_FILE = YES;
+            IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+            PRODUCT_BUNDLE_IDENTIFIER = "com.novadev.iram-plus.tests";
+            PRODUCT_NAME = "$(TARGET_NAME)";
+            SDKROOT = iphoneos;
+            SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+            SWIFT_VERSION = 5.0;
+            TARGETED_DEVICE_FAMILY = "1,2";
+        }; };
+
+
 /* Begin PBXBuildFile section */
+		AABB000130558D4400540EF8 /* SideSign in Frameworks */ = {isa = PBXBuildFile; productRef = AABB000230558D4400540EF8 /* SideSign */; };
 		4E9544D130558D4400540EF8 /* StosSign_API in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D030558D4400540EF8 /* StosSign_API */; };
-		4E9544D330558D4400540EF8 /* StosSign_Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D230558D4400540EF8 /* StosSign_Auth */; };
 		4E9544D530558D4400540EF8 /* StosSign_Common in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9544D430558D4400540EF8 /* StosSign_Common */; };
 /* End PBXBuildFile section */
 
@@ -42,7 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E9544D330558D4400540EF8 /* StosSign_Auth in Frameworks */,
+				AABB000130558D4400540EF8 /* SideSign in Frameworks */,
 				4E9544D130558D4400540EF8 /* StosSign_API in Frameworks */,
 				4E9544D530558D4400540EF8 /* StosSign_Common in Frameworks */,
 			);
@@ -54,6 +100,7 @@
 		173496E72D847E82007994DB = {
 			isa = PBXGroup;
 			children = (
+                AABB001230558D4400540EF8,
 				173496F22D847E82007994DB /* iRAM-Plus */,
 				173497042D847F5A007994DB /* Frameworks */,
 				173496F12D847E82007994DB /* Products */,
@@ -63,6 +110,7 @@
 		173496F12D847E82007994DB /* Products */ = {
 			isa = PBXGroup;
 			children = (
+                AABB001130558D4400540EF8 /* iRAM-PlusTests.xctest */,
 				173496F02D847E82007994DB /* iRAM-Plus.app */,
 			);
 			name = Products;
@@ -95,8 +143,8 @@
 			);
 			name = iRAM-Plus;
 			packageProductDependencies = (
+				AABB000230558D4400540EF8 /* SideSign */,
 				4E9544D030558D4400540EF8 /* StosSign_API */,
-				4E9544D230558D4400540EF8 /* StosSign_Auth */,
 				4E9544D430558D4400540EF8 /* StosSign_Common */,
 			);
 			productName = iRAM-Plus;
@@ -128,6 +176,7 @@
 			mainGroup = 173496E72D847E82007994DB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				AABB000330558D4400540EF8 /* SideSign */,
 				4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -135,6 +184,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+                AABB001030558D4400540EF8,
 				173496EF2D847E82007994DB /* iRAM-Plus */,
 			);
 		};
@@ -368,6 +418,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+        AABB000330558D4400540EF8 /* SideSign */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/SideStore/SideSign";
+            requirement = {
+                kind = revision;
+                revision = df2b8e4257454f0c7629276d409d6e9d7953fdf6;
+            };
+        };
 		4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stossy11/StosSign";
@@ -379,16 +437,17 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+        AABB000230558D4400540EF8 /* SideSign */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = AABB000330558D4400540EF8 /* SideSign */;
+            productName = SideSign;
+        };
 		4E9544D030558D4400540EF8 /* StosSign_API */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
 			productName = StosSign_API;
 		};
-		4E9544D230558D4400540EF8 /* StosSign_Auth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
-			productName = StosSign_Auth;
-		};
+
 		4E9544D430558D4400540EF8 /* StosSign_Common */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4E9544CF30558D4400540EF8 /* XCRemoteSwiftPackageReference "StosSign" */;
