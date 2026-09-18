@@ -19,7 +19,7 @@ class AlertHelper<T> : ObservableObject {
             self.c = c
             Task { @MainActor [weak self] in
                 self?.show = true
-            }}
+            }
         }
         return self.result
     }
