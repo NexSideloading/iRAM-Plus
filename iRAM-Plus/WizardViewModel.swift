@@ -236,7 +236,6 @@ class WizardViewModel: ObservableObject {
                 selectedAnisetteServer = firstServer
             }
             isRestoringServer = false
-            }
         } catch {
             print("Failed to fetch anisette servers: \(error)")
         }
