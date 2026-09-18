@@ -71,30 +71,28 @@ class AppIDModel : ObservableObject, Hashable {
             let cool = try await AppleAPI.shared.updateAppID(appID, capabilities: capabilities, team: team, session: session)
             
             logging(text: "Request successful!")
-            
-            await MainActor.run {
-                var successMessage = "✅ Success! "
-                var enabledCapabilities: [String] = []
-                
-                if enableIncreasedMemoryLimit {
-                    enabledCapabilities.append("Increased Memory Limit")
-                }
-                if enableExtendedVirtualAddressing {
-                    enabledCapabilities.append("Extended Virtual Addressing")
-                }
-                
-                if enabledCapabilities.count == 1 {
-                    successMessage += "\(enabledCapabilities[0]) capability has been enabled."
-                } else {
-                    successMessage += "\(enabledCapabilities.joined(separator: " and ")) capabilities have been enabled."
-                }
-                
-                let enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging")
-                if enableDebugging {
-                    successMessage += "\n\nAPI Response:\n\(cool)"
-                }
-                result = successMessage
+
+            var successMessage = "✅ Success! "
+            var enabledCapabilities: [String] = []
+
+            if enableIncreasedMemoryLimit {
+                enabledCapabilities.append("Increased Memory Limit")
             }
+            if enableExtendedVirtualAddressing {
+                enabledCapabilities.append("Extended Virtual Addressing")
+            }
+
+            if enabledCapabilities.count == 1 {
+                successMessage += "\(enabledCapabilities[0]) capability has been enabled."
+            } else {
+                successMessage += "\(enabledCapabilities.joined(separator: " and ")) capabilities have been enabled."
+            }
+
+            let enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging")
+            if enableDebugging {
+                successMessage += "\n\nAPI Response:\n\(cool)"
+            }
+            result = successMessage
             
             logging(text: "=== Memory Limit Enablement Completed Successfully ===")
         } catch {
@@ -115,11 +113,9 @@ class AppIDViewModel : ObservableObject {
         }
         
         let ids = try await AppleAPI.shared.fetchAppIDsForTeam(team: team, session: session)
-        await MainActor.run {
-            appIDs.removeAll()
-            for id in ids {
-                appIDs.append(AppIDModel(appID: id))
-            }
+        appIDs.removeAll()
+        for id in ids {
+            appIDs.append(AppIDModel(appID: id))
         }
     }
 }

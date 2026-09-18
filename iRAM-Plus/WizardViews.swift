@@ -503,17 +503,13 @@ struct LoginSlide: View {
         if viewModel.loginViewModel.needVerificationCode {
             do {
                 try await viewModel.loginViewModel.verifyTwoFactorCode(verificationCode)
-                await MainActor.run {
-                    isLoggingIn = false
-                    // Go directly to apps page after successful 2FA verification
-                    viewModel.goToStep(.apps)
-                }
+                isLoggingIn = false
+                // Go directly to apps page after successful 2FA verification
+                viewModel.goToStep(.apps)
             } catch {
-                await MainActor.run {
-                    viewModel.errorMessage = error.localizedDescription
-                    viewModel.showError = true
-                    isLoggingIn = false
-                }
+                viewModel.errorMessage = error.localizedDescription
+                viewModel.showError = true
+                isLoggingIn = false
             }
             return
         }
@@ -533,31 +529,25 @@ struct LoginSlide: View {
         Task {
             do {
                 let result = try await viewModel.loginViewModel.authenticate()
-                
-                await MainActor.run {
-                    isLoggingIn = false
-                    if result {
-                        // Save to keychain only if toggle is enabled
-                        if viewModel.saveLoginToKeychain {
-                            Keychain.shared.appleAccountEmailAddress = appleAccount
-                            Keychain.shared.appleAccountPassword = password
-                        }
-                        // Go directly to apps page after successful login
-                        viewModel.goToStep(.apps)
+
+                isLoggingIn = false
+                if result {
+                    // Save to keychain only if toggle is enabled
+                    if viewModel.saveLoginToKeychain {
+                        Keychain.shared.appleAccountEmailAddress = appleAccount
+                        Keychain.shared.appleAccountPassword = password
                     }
+                    // Go directly to apps page after successful login
+                    viewModel.goToStep(.apps)
                 }
             } catch is CancellationError {
-                await MainActor.run {
-                    isLoggingIn = false
-                }
+                isLoggingIn = false
             } catch {
-                await MainActor.run {
-                    isLoggingIn = false
-                    // If 2FA is needed, don't show error - the 2FA input will be shown
-                    if !viewModel.loginViewModel.needVerificationCode {
-                        viewModel.errorMessage = error.localizedDescription
-                        viewModel.showError = true
-                    }
+                isLoggingIn = false
+                // If 2FA is needed, don't show error - the 2FA input will be shown
+                if !viewModel.loginViewModel.needVerificationCode {
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showError = true
                 }
             }
         }
@@ -589,14 +579,10 @@ struct LoginSlide: View {
             Task {
                 do {
                     try await viewModel.loginViewModel.login()
-                    await MainActor.run {
-                        viewModel.nextStep()
-                    }
+                    viewModel.nextStep()
                 } catch {
-                    await MainActor.run {
-                        viewModel.errorMessage = error.localizedDescription
-                        viewModel.showError = true
-                    }
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showError = true
                 }
             }
         } catch {
@@ -691,15 +677,11 @@ struct AppsListSlide: View {
         .task {
             do {
                 try await appIDViewModel.fetchAppIDs()
-                await MainActor.run {
-                    isLoading = false
-                }
+                isLoading = false
             } catch {
-                await MainActor.run {
-                    viewModel.errorMessage = error.localizedDescription
-                    viewModel.showError = true
-                    isLoading = false
-                }
+                viewModel.errorMessage = error.localizedDescription
+                viewModel.showError = true
+                isLoading = false
             }
         }
         .alert("Error", isPresented: $viewModel.showError) {
@@ -848,51 +830,47 @@ struct AddCapabilitySlide: View {
     
     private func addCapability() {
         guard let app = viewModel.selectedApp else { return }
-        
+
         isAdding = true
-        
+
         Task {
             do {
                 try await app.addIncreasedMemory()
-                await MainActor.run {
-                    viewModel.serverResponse = app.result
-                    viewModel.nextStep()
+                viewModel.serverResponse = app.result
+                viewModel.nextStep()
+                isAdding = false
+                retryCount = 0
+            } catch {
+                viewModel.serverResponse = app.result
+                let errorDescription = error.localizedDescription.lowercased()
+
+                // Check if error is authentication/session expired
+                if errorDescription.contains("401") || errorDescription.contains("not_authorized") || errorDescription.contains("session has expired") {
+                    // Navigate back to login page
+                    viewModel.goToStep(.login)
+                    viewModel.errorMessage = "Your session has expired. Please log in again."
+                    viewModel.showError = true
                     isAdding = false
                     retryCount = 0
-                }
-            } catch {
-                await MainActor.run {
-                    viewModel.serverResponse = app.result
-                    let errorDescription = error.localizedDescription.lowercased()
-                    
-                    // Check if error is authentication/session expired
-                    if errorDescription.contains("401") || errorDescription.contains("not_authorized") || errorDescription.contains("session has expired") {
-                        // Navigate back to login page
+                } else if errorDescription.contains("bad server response") && retryCount < 2 {
+                    // Retry for bad server response (max 3 attempts total)
+                    retryCount += 1
+                    isAdding = false
+                    // Retry after a short delay
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    addCapability()
+                } else {
+                    // Final error after retries or other error
+                    // Check if still logged in
+                    if DataManager.shared.model.session == nil || DataManager.shared.model.team == nil {
                         viewModel.goToStep(.login)
-                        viewModel.errorMessage = "Your session has expired. Please log in again."
-                        viewModel.showError = true
-                        isAdding = false
-                        retryCount = 0
-                    } else if errorDescription.contains("bad server response") && retryCount < 2 {
-                        // Retry for bad server response (max 3 attempts total)
-                        retryCount += 1
-                        isAdding = false
-                        // Retry after a short delay
-                        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                        addCapability()
+                        viewModel.errorMessage = "You are no longer logged in. Please log in again."
                     } else {
-                        // Final error after retries or other error
-                        // Check if still logged in
-                        if DataManager.shared.model.session == nil || DataManager.shared.model.team == nil {
-                            viewModel.goToStep(.login)
-                            viewModel.errorMessage = "You are no longer logged in. Please log in again."
-                        } else {
-                            viewModel.errorMessage = error.localizedDescription
-                        }
-                        viewModel.showError = true
-                        isAdding = false
-                        retryCount = 0
+                        viewModel.errorMessage = error.localizedDescription
                     }
+                    viewModel.showError = true
+                    isAdding = false
+                    retryCount = 0
                 }
             }
         }

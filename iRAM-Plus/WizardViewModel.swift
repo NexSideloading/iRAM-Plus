@@ -210,33 +210,32 @@ class WizardViewModel: ObservableObject {
     
     func fetchAnisetteServers() async {
         guard let url = URL(string: "https://servers.sidestore.io/servers.json") else { return }
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let serverList = try JSONDecoder().decode(AnisetteServerList.self, from: data)
-            await MainActor.run {
-                anisetteServers = serverList.servers
-                // Restore saved selection or default to first server
-                isRestoringServer = true
-                if let savedName = UserDefaults.standard.string(forKey: "selectedAnisetteServerName"),
-                   let savedAddress = UserDefaults.standard.string(forKey: "selectedAnisetteServerAddress") {
-                    // Check if saved selection was Custom
-                    if savedName == "Custom" {
-                        customAnisetteURL = savedAddress
-                        anisetteServerURL = savedAddress
-                        selectedAnisetteServer = AnisetteServer.custom
-                    } else if let savedServer = anisetteServers.first(where: { $0.name == savedName && $0.address == savedAddress }) {
-                        anisetteServerURL = savedAddress
-                        selectedAnisetteServer = savedServer
-                    } else if let firstServer = anisetteServers.first {
-                        anisetteServerURL = firstServer.address
-                        selectedAnisetteServer = firstServer
-                    }
+            anisetteServers = serverList.servers
+            // Restore saved selection or default to first server
+            isRestoringServer = true
+            if let savedName = UserDefaults.standard.string(forKey: "selectedAnisetteServerName"),
+               let savedAddress = UserDefaults.standard.string(forKey: "selectedAnisetteServerAddress") {
+                // Check if saved selection was Custom
+                if savedName == "Custom" {
+                    customAnisetteURL = savedAddress
+                    anisetteServerURL = savedAddress
+                    selectedAnisetteServer = AnisetteServer.custom
+                } else if let savedServer = anisetteServers.first(where: { $0.name == savedName && $0.address == savedAddress }) {
+                    anisetteServerURL = savedAddress
+                    selectedAnisetteServer = savedServer
                 } else if let firstServer = anisetteServers.first {
                     anisetteServerURL = firstServer.address
                     selectedAnisetteServer = firstServer
                 }
-                isRestoringServer = false
+            } else if let firstServer = anisetteServers.first {
+                anisetteServerURL = firstServer.address
+                selectedAnisetteServer = firstServer
+            }
+            isRestoringServer = false
             }
         } catch {
             print("Failed to fetch anisette servers: \(error)")

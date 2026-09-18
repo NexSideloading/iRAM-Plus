@@ -17,8 +17,8 @@ class AlertHelper<T> : ObservableObject {
     func open() async -> T? {
         await withCheckedContinuation { c in
             self.c = c
-            Task { await MainActor.run {
-                self.show = true
+            Task { @MainActor [weak self] in
+                self?.show = true
             }}
         }
         return self.result
