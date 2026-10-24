@@ -12,12 +12,17 @@ struct AnisetteServer: Codable, Identifiable, Equatable, Hashable {
     let id = UUID()
     let name: String
     let address: String
-    
+    let kind: Int?
+
     enum CodingKeys: String, CodingKey {
-        case name, address
+        case name, address, kind
     }
-    
-    static let custom = AnisetteServer(name: "Custom", address: "")
+
+    static let custom = AnisetteServer(
+        name: "Custom",
+        address: "",
+        kind: nil
+    )
 }
 
 struct AnisetteServerList: Codable {
@@ -27,18 +32,22 @@ struct AnisetteServerList: Codable {
 
 func getAppIconName(for bundleID: String) -> String {
     let bundleID = bundleID.lowercased()
-    
+
     if bundleID.contains("com.rileytestut.altstore") {
         return "altstore"
     } else if bundleID.contains("org.angelauramc.amethyst") {
         return "amethyst"
     } else if bundleID.contains("me.oatmealdome.dolphinios") {
         return "dolphinios"
-    } else if bundleID.contains("com.flyinghead.flycast") || bundleID.contains("com.flycast.emulator") || bundleID.contains("org.openemu.flycast") || bundleID.contains("org.flycast.flycast") {
+    } else if bundleID.contains("com.flyinghead.flycast") ||
+                bundleID.contains("com.flycast.emulator") ||
+                bundleID.contains("org.openemu.flycast") ||
+                bundleID.contains("org.flycast.flycast") {
         return "flycast"
     } else if bundleID.contains("novadev.iram-plus") {
         return "iram"
-    } else if bundleID.contains("com.stossy11.melonx") || bundleID.contains("org.ryujinx.ryujinx") {
+    } else if bundleID.contains("com.stossy11.melonx") ||
+                bundleID.contains("org.ryujinx.ryujinx") {
         return "melo"
     } else if bundleID.contains("com.kdt.livecontainer") {
         return "livecontainer"
@@ -48,10 +57,11 @@ func getAppIconName(for bundleID: String) -> String {
         return "ppsspp"
     } else if bundleID.contains("com.sidestore.sidestore") {
         return "sidestore"
-    } else if bundleID.contains("com.utmapp.utm-se") || bundleID.contains("com.utmapp.utm") {
+    } else if bundleID.contains("com.utmapp.utm-se") ||
+                bundleID.contains("com.utmapp.utm") {
         return "utm"
     }
-    
+
     return "fallback"
 }
 
@@ -67,88 +77,157 @@ enum WizardStep: Int, CaseIterable {
 @MainActor
 class WizardViewModel: ObservableObject {
     @Published var currentStep: WizardStep = .welcome
-    @Published var anisetteServerURL: String = "https://ani.sidestore.io"
+    @Published var anisetteServerURL: String = "https://ani.jkcoxson.com"
     @Published var loginProgress: Double = 0.0
     @Published var loginStatus: String = ""
     @Published var selectedApp: AppIDModel?
     @Published var serverResponse: String = ""
     @Published var errorMessage: String = ""
     @Published var showError: Bool = false
-    @Published var saveLoginToKeychain = UserDefaults.standard.bool(forKey: "saveLoginToKeychain") {
+
+    @Published var saveLoginToKeychain = UserDefaults.standard.bool(
+        forKey: "saveLoginToKeychain"
+    ) {
         didSet {
-            UserDefaults.standard.set(saveLoginToKeychain, forKey: "saveLoginToKeychain")
-            // Clear keychain when toggle is turned off
+            UserDefaults.standard.set(
+                saveLoginToKeychain,
+                forKey: "saveLoginToKeychain"
+            )
+
+            // Clear keychain when toggle is turned off.
             if !saveLoginToKeychain {
                 Keychain.shared.appleAccountEmailAddress = nil
                 Keychain.shared.appleAccountPassword = nil
             }
         }
     }
-    @Published var enableIncreasedMemoryLimit = UserDefaults.standard.object(forKey: "enableIncreasedMemoryLimit") == nil ? true : UserDefaults.standard.bool(forKey: "enableIncreasedMemoryLimit") {
+
+    @Published var enableIncreasedMemoryLimit =
+        UserDefaults.standard.object(forKey: "enableIncreasedMemoryLimit") == nil
+        ? true
+        : UserDefaults.standard.bool(forKey: "enableIncreasedMemoryLimit") {
         didSet {
-            // Ensure at least one entitlement is always enabled
+            // Ensure at least one entitlement is always enabled.
             if !enableIncreasedMemoryLimit && !enableExtendedVirtualAddressing {
                 enableIncreasedMemoryLimit = true
                 return
             }
-            UserDefaults.standard.set(enableIncreasedMemoryLimit, forKey: "enableIncreasedMemoryLimit")
+
+            UserDefaults.standard.set(
+                enableIncreasedMemoryLimit,
+                forKey: "enableIncreasedMemoryLimit"
+            )
         }
     }
-    @Published var enableExtendedVirtualAddressing = UserDefaults.standard.object(forKey: "enableExtendedVirtualAddressing") == nil ? false : UserDefaults.standard.bool(forKey: "enableExtendedVirtualAddressing") {
+
+    @Published var enableExtendedVirtualAddressing =
+        UserDefaults.standard.object(forKey: "enableExtendedVirtualAddressing") == nil
+        ? false
+        : UserDefaults.standard.bool(forKey: "enableExtendedVirtualAddressing") {
         didSet {
-            // Ensure at least one entitlement is always enabled
+            // Ensure at least one entitlement is always enabled.
             if !enableExtendedVirtualAddressing && !enableIncreasedMemoryLimit {
                 enableExtendedVirtualAddressing = true
                 return
             }
-            UserDefaults.standard.set(enableExtendedVirtualAddressing, forKey: "enableExtendedVirtualAddressing")
+
+            UserDefaults.standard.set(
+                enableExtendedVirtualAddressing,
+                forKey: "enableExtendedVirtualAddressing"
+            )
         }
     }
-    @Published var enableDebugging = UserDefaults.standard.bool(forKey: "enableDebugging") {
+
+    @Published var enableDebugging = UserDefaults.standard.bool(
+        forKey: "enableDebugging"
+    ) {
         didSet {
-            UserDefaults.standard.set(enableDebugging, forKey: "enableDebugging")
+            UserDefaults.standard.set(
+                enableDebugging,
+                forKey: "enableDebugging"
+            )
         }
     }
+
     @Published var anisetteServers: [AnisetteServer] = []
+
     @Published var selectedAnisetteServer: AnisetteServer = AnisetteServer.custom {
         didSet {
-            // Only save if the value actually changed and wasn't just initialization
+            // Only save if the value actually changed and wasn't just initialization.
             if selectedAnisetteServer != oldValue && !isRestoringServer {
                 if selectedAnisetteServer != AnisetteServer.custom {
                     anisetteServerURL = selectedAnisetteServer.address
-                    UserDefaults.standard.set(selectedAnisetteServer.name, forKey: "selectedAnisetteServerName")
-                    UserDefaults.standard.set(selectedAnisetteServer.address, forKey: "selectedAnisetteServerAddress")
-                    AnisetteDataHelper.shared.url = URL(string: selectedAnisetteServer.address)
+
+                    UserDefaults.standard.set(
+                        selectedAnisetteServer.name,
+                        forKey: "selectedAnisetteServerName"
+                    )
+
+                    UserDefaults.standard.set(
+                        selectedAnisetteServer.address,
+                        forKey: "selectedAnisetteServerAddress"
+                    )
+
+                    AnisetteDataHelper.shared.url = URL(
+                        string: selectedAnisetteServer.address
+                    )
                 } else {
-                    // When switching to Custom, save it as Custom with the current custom URL
-                    UserDefaults.standard.set("Custom", forKey: "selectedAnisetteServerName")
-                    UserDefaults.standard.set(customAnisetteURL, forKey: "selectedAnisetteServerAddress")
+                    // When switching to Custom, save it as Custom with the current custom URL.
+                    UserDefaults.standard.set(
+                        "Custom",
+                        forKey: "selectedAnisetteServerName"
+                    )
+
+                    UserDefaults.standard.set(
+                        customAnisetteURL,
+                        forKey: "selectedAnisetteServerAddress"
+                    )
+
                     anisetteServerURL = customAnisetteURL
-                    AnisetteDataHelper.shared.url = URL(string: customAnisetteURL)
+                    AnisetteDataHelper.shared.url = URL(
+                        string: customAnisetteURL
+                    )
                 }
             }
         }
     }
-    
+
     private var isRestoringServer = false
+
     @Published var customAnisetteURL: String = "" {
         didSet {
-            if selectedAnisetteServer == AnisetteServer.custom && !isRestoringServer {
+            if selectedAnisetteServer == AnisetteServer.custom &&
+                !isRestoringServer {
                 anisetteServerURL = customAnisetteURL
-                UserDefaults.standard.set(customAnisetteURL, forKey: "customAnisetteURL")
-                UserDefaults.standard.set("Custom", forKey: "selectedAnisetteServerName")
-                UserDefaults.standard.set(customAnisetteURL, forKey: "selectedAnisetteServerAddress")
-                AnisetteDataHelper.shared.url = URL(string: customAnisetteURL)
+
+                UserDefaults.standard.set(
+                    customAnisetteURL,
+                    forKey: "customAnisetteURL"
+                )
+
+                UserDefaults.standard.set(
+                    "Custom",
+                    forKey: "selectedAnisetteServerName"
+                )
+
+                UserDefaults.standard.set(
+                    customAnisetteURL,
+                    forKey: "selectedAnisetteServerAddress"
+                )
+
+                AnisetteDataHelper.shared.url = URL(
+                    string: customAnisetteURL
+                )
             }
         }
     }
-    
+
     let loginViewModel = LoginViewModel()
     private var cancellables = Set<AnyCancellable>()
-    
+
     func nextStep() {
         if let nextStep = WizardStep(rawValue: currentStep.rawValue + 1) {
-            // Don't allow skipping from login to addCapability - must go through apps
+            // Don't allow skipping from login to addCapability - must go through apps.
             if currentStep == .login && nextStep == .addCapability {
                 currentStep = .apps
             } else {
@@ -156,12 +235,11 @@ class WizardViewModel: ObservableObject {
             }
         }
     }
-    
+
     func goToStep(_ step: WizardStep) {
         currentStep = step
     }
-    
-    
+
     func reset() {
         currentStep = .welcome
         loginProgress = 0.0
@@ -171,29 +249,33 @@ class WizardViewModel: ObservableObject {
         errorMessage = ""
         showError = false
     }
-    
+
     func updateLoginProgress(progress: Double, status: String) {
         withAnimation(.easeInOut(duration: 0.5)) {
             loginProgress = progress
             loginStatus = status
         }
     }
-    
+
     func clearKeychain() {
         let sharedModel = DataManager.shared.model
+
         Keychain.shared.adiPb = nil
         Keychain.shared.identifier = nil
         Keychain.shared.appleAccountPassword = nil
         Keychain.shared.appleAccountEmailAddress = nil
+
         AnisetteDataHelper.shared.resetClientInfo()
+
         sharedModel.session = nil
         sharedModel.account = nil
         sharedModel.team = nil
         sharedModel.isLogin = false
+
         loginViewModel.availableTeams = []
         loginViewModel.teamSelectionShow = false
     }
-    
+
     func resetLoginState() {
         loginViewModel.appleAccount = ""
         loginViewModel.password = ""
@@ -202,32 +284,55 @@ class WizardViewModel: ObservableObject {
         loginViewModel.isLoginInProgress = false
         loginViewModel.resetVerificationCodeState()
         loginViewModel.logs = ""
+
         loginProgress = 0.0
         loginStatus = ""
         errorMessage = ""
         showError = false
     }
-    
+
     func fetchAnisetteServers() async {
-        guard let url = URL(string: "https://servers.sidestore.io/servers.json") else { return }
+        guard let url = URL(
+            string: "https://servers.sidestore.io/servers.json"
+        ) else {
+            return
+        }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let serverList = try JSONDecoder().decode(AnisetteServerList.self, from: data)
-            anisetteServers = serverList.servers
-            // Restore saved selection or default to first server
+            let serverList = try JSONDecoder().decode(
+                AnisetteServerList.self,
+                from: data
+            )
+
+            // Filter out legacy Android-library servers (kind 0).
+            // Keep kind 1 and 2, as well as servers without a kind field.
+            anisetteServers = serverList.servers.filter { server in
+                server.kind.map { $0 != 0 } ?? true
+            }
+
+            // Restore saved selection or default to the first available server.
             isRestoringServer = true
-            if let savedName = UserDefaults.standard.string(forKey: "selectedAnisetteServerName"),
-               let savedAddress = UserDefaults.standard.string(forKey: "selectedAnisetteServerAddress") {
-                // Check if saved selection was Custom
+
+            if let savedName = UserDefaults.standard.string(
+                forKey: "selectedAnisetteServerName"
+            ),
+               let savedAddress = UserDefaults.standard.string(
+                forKey: "selectedAnisetteServerAddress"
+               ) {
+                // Check if saved selection was Custom.
                 if savedName == "Custom" {
                     customAnisetteURL = savedAddress
                     anisetteServerURL = savedAddress
                     selectedAnisetteServer = AnisetteServer.custom
-                } else if let savedServer = anisetteServers.first(where: { $0.name == savedName && $0.address == savedAddress }) {
-                    anisetteServerURL = savedAddress
+                } else if let savedServer = anisetteServers.first(where: {
+                    $0.name == savedName && $0.address == savedAddress
+                }) {
+                    // Restore the saved selection if it still exists in the filtered list.
+                    anisetteServerURL = savedServer.address
                     selectedAnisetteServer = savedServer
                 } else if let firstServer = anisetteServers.first {
+                    // The saved server was removed or filtered out.
                     anisetteServerURL = firstServer.address
                     selectedAnisetteServer = firstServer
                 }
@@ -235,32 +340,44 @@ class WizardViewModel: ObservableObject {
                 anisetteServerURL = firstServer.address
                 selectedAnisetteServer = firstServer
             }
+
             isRestoringServer = false
         } catch {
+            isRestoringServer = false
             print("Failed to fetch anisette servers: \(error)")
         }
     }
-    
+
     init() {
-        // Load custom URL if saved without triggering didSet
-        let savedCustomURL = UserDefaults.standard.string(forKey: "customAnisetteURL") ?? ""
+        // Load custom URL if saved without triggering didSet.
+        let savedCustomURL = UserDefaults.standard.string(
+            forKey: "customAnisetteURL"
+        ) ?? ""
+
         isRestoringServer = true
         customAnisetteURL = savedCustomURL
-        
-        // Check if saved selection was Custom and restore it
-        if let savedName = UserDefaults.standard.string(forKey: "selectedAnisetteServerName"),
+
+        // Check if saved selection was Custom and restore it.
+        if let savedName = UserDefaults.standard.string(
+            forKey: "selectedAnisetteServerName"
+        ),
            savedName == "Custom" {
             selectedAnisetteServer = AnisetteServer.custom
-            if let savedAddress = UserDefaults.standard.string(forKey: "selectedAnisetteServerAddress") {
+
+            if let savedAddress = UserDefaults.standard.string(
+                forKey: "selectedAnisetteServerAddress"
+            ) {
                 customAnisetteURL = savedAddress
                 anisetteServerURL = savedAddress
             }
         }
-        isRestoringServer = false
-        
-        loginViewModel.objectWillChange.sink { [weak self] _ in
-            self?.objectWillChange.send()
-        }.store(in: &cancellables)
-    }
 
+        isRestoringServer = false
+
+        loginViewModel.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+    }
 }
