@@ -12,6 +12,9 @@
     <a href="https://github.com/NovaDev404/iRAM-Plus/releases/latest">
       <img src="https://img.shields.io/github/v/release/NovaDev404/iRAM-Plus?style=for-the-badge&label=Latest%20Release" alt="Latest Release">
     </a>
+    <a href="https://github.com/nexsideloading/iRAM-Plus/releases">
+      <img src="https://img.shields.io/github/downloads/nexsideloading/iRAM-Plus/total?style=for-the-badge" alt="GitHub Downloads">
+    </a>
     <a href="https://github.com/NovaDev404/iRAM-Plus/stargazers">
       <img src="https://img.shields.io/github/stars/NovaDev404/iRAM-Plus?style=for-the-badge" alt="GitHub Stars">
     </a>
