@@ -1,4 +1,4 @@
-<div align="center">
+[![LLM Context](https://badge.forgithub.com/NexSideloading/iRAM-Plus?badge=context)](https://uithub.com/NexSideloading/iRAM-Plus)<div align="center">
   <img src="https://raw.githubusercontent.com/NovaDev404/iRAM-Plus/refs/heads/main/iRAM-Plus/Assets.xcassets/AppIcon.appiconset/icon.png" width="128" height="128" alt="iRAM+ icon">
 
   <h1>iRAM+</h1>
